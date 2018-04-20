@@ -1,4 +1,5 @@
 // Copyright 2015 The go-ethereum Authors
+// Copyright 2018 Webchain project
 // This file is part of Webchain.
 //
 // Webchain is free software: you can redistribute it and/or modify
@@ -18,8 +19,6 @@ package core
 
 import (
 	"math/big"
-
-	"errors"
 	"fmt"
 
 	"github.com/webchain-network/webchaind/core/state"
@@ -31,13 +30,9 @@ import (
 )
 
 var (
-	MaximumBlockReward       = big.NewInt(5e+18) // that's shiny 5 ether
-	big8                     = big.NewInt(8)
 	big32                    = big.NewInt(32)
-	DisinflationRateQuotient = big.NewInt(4)
-	DisinflationRateDivisor  = big.NewInt(5)
-
-	ErrConfiguration = errors.New("invalid configuration")
+	DisinflationRateQuotient = big.NewInt(249)
+	DisinflationRateDivisor  = big.NewInt(250)
 )
 
 // StateProcessor is a basic Processor, which takes care of transitioning
@@ -151,56 +146,24 @@ func AccumulateRewards(config *ChainConfig, statedb *state.StateDB, header *type
 	// block.Number = 2,534,999 // uncles can be at same height as each other
 	// ... as uncles get older (within validation; <=n-7), reward drops
 
-	// Since ECIP1017 impacts "Era 1" idempotently and with constant 0-block based eras,
-	// we don't care about where the block/fork implementing it is.
-	feat, _, configured := config.HasFeature("reward")
-	if !configured {
-		reward := new(big.Int).Set(MaximumBlockReward)
-		r := new(big.Int)
+	eraLen := big.NewInt(100000)
+	era := GetBlockEra(header.Number, eraLen)
 
-		for _, uncle := range uncles {
-			r.Add(uncle.Number, big8)    // 2,534,998 + 8              = 2,535,006
-			r.Sub(r, header.Number)      // 2,535,006 - 2,534,999        = 7
-			r.Mul(r, MaximumBlockReward) // 7 * 5e+18               = 35e+18
-			r.Div(r, big8)               // 35e+18 / 8                            = 7/8 * 5e+18
+	wr := GetBlockWinnerRewardByEra(era) // wr "winner reward".
 
-			statedb.AddBalance(uncle.Coinbase, r) // $$
+	wurs := GetBlockWinnerRewardForUnclesByEra(era, uncles) // wurs "winner uncle rewards"
+	wr.Add(wr, wurs)
 
-			r.Div(MaximumBlockReward, big32) // 5e+18 / 32
-			reward.Add(reward, r)            // 5e+18 + (1/32*5e+18)
-		}
-		statedb.AddBalance(header.Coinbase, reward) //  $$ => 5e+18 + (1/32*5e+18)
-	} else {
-		// Check that configuration specifies ECIP1017.
-		val, ok := feat.GetString("type")
-		if !ok || val != "ecip1017" {
-			panic(ErrConfiguration)
-		}
+	statedb.AddBalance(header.Coinbase, wr) // $$
 
-		// Ensure value 'era' is configured.
-		eraLen, ok := feat.GetBigInt("era")
-		if !ok || eraLen.Cmp(big.NewInt(0)) <= 0 {
-			panic(ErrConfiguration)
-		}
-
-		era := GetBlockEra(header.Number, eraLen)
-
-		wr := GetBlockWinnerRewardByEra(era) // wr "winner reward". 5, 4, 3.2, 2.56, ...
-
-		wurs := GetBlockWinnerRewardForUnclesByEra(era, uncles) // wurs "winner uncle rewards"
-		wr.Add(wr, wurs)
-
-		statedb.AddBalance(header.Coinbase, wr) // $$
-
-		// Reward uncle miners.
-		for _, uncle := range uncles {
-			ur := GetBlockUncleRewardByEra(era, header, uncle)
-			statedb.AddBalance(uncle.Coinbase, ur) // $$
-		}
+	// Reward uncle miners.
+	for _, uncle := range uncles {
+		ur := GetBlockUncleRewardByEra(era, header, uncle)
+		statedb.AddBalance(uncle.Coinbase, ur) // $$
 	}
 }
 
-// As of "Era 2" (zero-index era 1), uncle miners and winners are rewarded equally for each included block.
+// Uncle miners and winners are rewarded equally for each included block.
 // So they share this function.
 func getEraUncleBlockReward(era *big.Int) *big.Int {
 	return new(big.Int).Div(GetBlockWinnerRewardByEra(era), big32)
@@ -208,17 +171,6 @@ func getEraUncleBlockReward(era *big.Int) *big.Int {
 
 // GetBlockUncleRewardByEra gets called _for each uncle miner_ associated with a winner block's uncles.
 func GetBlockUncleRewardByEra(era *big.Int, header, uncle *types.Header) *big.Int {
-	// Era 1 (index 0):
-	//   An extra reward to the winning miner for including uncles as part of the block, in the form of an extra 1/32 (0.15625ETC) per uncle included, up to a maximum of two (2) uncles.
-	if era.Cmp(big.NewInt(0)) == 0 {
-		r := new(big.Int)
-		r.Add(uncle.Number, big8)    // 2,534,998 + 8              = 2,535,006
-		r.Sub(r, header.Number)      // 2,535,006 - 2,534,999        = 7
-		r.Mul(r, MaximumBlockReward) // 7 * 5e+18               = 35e+18
-		r.Div(r, big8)               // 35e+18 / 8                            = 7/8 * 5e+18
-
-		return r
-	}
 	return getEraUncleBlockReward(era)
 }
 
@@ -228,7 +180,7 @@ func GetBlockWinnerRewardForUnclesByEra(era *big.Int, uncles []*types.Header) *b
 	r := big.NewInt(0)
 
 	for range uncles {
-		r.Add(r, getEraUncleBlockReward(era)) // can reuse this, since 1/32 for winner's uncles remain unchanged from "Era 1"
+		r.Add(r, getEraUncleBlockReward(era))
 	}
 	return r
 }
@@ -236,11 +188,14 @@ func GetBlockWinnerRewardForUnclesByEra(era *big.Int, uncles []*types.Header) *b
 // GetRewardByEra gets a block reward at disinflation rate.
 // Constants MaxBlockReward, DisinflationRateQuotient, and DisinflationRateDivisor assumed.
 func GetBlockWinnerRewardByEra(era *big.Int) *big.Int {
+	MaximumBlockReward := big.NewInt(5e+18) // 5 WEB
+	MaximumBlockReward.Mul(MaximumBlockReward, big.NewInt(10)) // 50 WEB
+
 	if era.Cmp(big.NewInt(0)) == 0 {
 		return new(big.Int).Set(MaximumBlockReward)
 	}
 
-	// MaxBlockReward _r_ * (4/5)**era == MaxBlockReward * (4**era) / (5**era)
+	// MaxBlockReward _r_ * (249/250)**era == MaxBlockReward * (249**era) / (250**era)
 	// since (q/d)**n == q**n / d**n
 	// qed
 	var q, d, r *big.Int = new(big.Int), new(big.Int), new(big.Int)
@@ -254,7 +209,7 @@ func GetBlockWinnerRewardByEra(era *big.Int) *big.Int {
 	return r
 }
 
-// GetBlockEra gets which "Era" a given block is within, given an era length (ecip-1017 has era=5,000,000 blocks)
+// GetBlockEra gets which "Era" a given block is within, given an era length (100,000 blocks)
 // Returns a zero-index era number, so "Era 1": 0, "Era 2": 1, "Era 3": 2 ...
 func GetBlockEra(blockNum, eraLength *big.Int) *big.Int {
 	// If genesis block or impossible negative-numbered block, return zero-val.
