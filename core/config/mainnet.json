@@ -69,32 +69,6 @@
                         }
                     }
                 ]
-            },
-            {
-                "name": "Gotham",
-                "block": 5000000,
-                "requiredHash": "0x0000000000000000000000000000000000000000000000000000000000000000",
-                "features": [
-                    {
-                        "id": "reward",
-                        "options": {
-                            "era": 5000000,
-                            "type": "ecip1017"
-                        }
-                    }
-                ]
-            },
-            {
-                "name": "Defuse Difficulty Bomb",
-                "block": 5900000,
-                "features": [
-                    {
-                        "id": "difficulty",
-                        "options": {
-                            "type": "defused"
-                        }
-                    }
-                ]
             }
         ],
         "badHashes": [
