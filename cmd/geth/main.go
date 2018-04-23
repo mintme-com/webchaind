@@ -81,7 +81,7 @@ var gpuBenchCommand = cli.Command{
 var versionCommand = cli.Command{
 	Action: version,
 	Name:   "version",
-	Usage:  "Print ethereum version numbers",
+	Usage:  "Print webchain version numbers",
 	Description: `
 	The output of this command is supposed to be machine-readable.
 			`,
