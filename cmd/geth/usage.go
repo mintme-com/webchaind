@@ -65,7 +65,7 @@ type flagGroup struct {
 // AppHelpFlagAndCommandGroups is the application flags, grouped by functionality.
 var AppHelpFlagAndCommandGroups = []flagGroup{
 	{
-		Name: "ETHEREUM",
+		Name: "WEBCHAIN",
 		Commands: []cli.Command{
 			importCommand,
 			exportCommand,
