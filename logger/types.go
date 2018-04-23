@@ -83,7 +83,7 @@ type EthMinerNewBlock struct {
 }
 
 func (l *EthMinerNewBlock) EventName() string {
-	return "eth.miner.new_block"
+	return "webchain.miner.new_block"
 }
 
 type EthChainReceivedNewBlock struct {
@@ -96,7 +96,7 @@ type EthChainReceivedNewBlock struct {
 }
 
 func (l *EthChainReceivedNewBlock) EventName() string {
-	return "eth.chain.received.new_block"
+	return "webchain.chain.received.new_block"
 }
 
 type EthChainNewHead struct {
@@ -108,7 +108,7 @@ type EthChainNewHead struct {
 }
 
 func (l *EthChainNewHead) EventName() string {
-	return "eth.chain.new_head"
+	return "webchain.chain.new_head"
 }
 
 type EthTxReceived struct {
@@ -118,7 +118,7 @@ type EthTxReceived struct {
 }
 
 func (l *EthTxReceived) EventName() string {
-	return "eth.tx.received"
+	return "webchain.tx.received"
 }
 
 //
@@ -236,7 +236,7 @@ func (l *EthTxReceived) EventName() string {
 // }
 
 // func (l *EthNewBlockBroadcasted) EventName() string {
-// 	return "eth.newblock.broadcasted"
+// 	return "webchain.newblock.broadcasted"
 // }
 
 // type EthNewBlockIsKnown struct {
@@ -249,7 +249,7 @@ func (l *EthTxReceived) EventName() string {
 // }
 
 // func (l *EthNewBlockIsKnown) EventName() string {
-// 	return "eth.newblock.is_known"
+// 	return "webchain.newblock.is_known"
 // }
 
 // type EthNewBlockIsNew struct {
@@ -262,7 +262,7 @@ func (l *EthTxReceived) EventName() string {
 // }
 
 // func (l *EthNewBlockIsNew) EventName() string {
-// 	return "eth.newblock.is_new"
+// 	return "webchain.newblock.is_new"
 // }
 
 // type EthNewBlockMissingParent struct {
@@ -275,7 +275,7 @@ func (l *EthTxReceived) EventName() string {
 // }
 
 // func (l *EthNewBlockMissingParent) EventName() string {
-// 	return "eth.newblock.missing_parent"
+// 	return "webchain.newblock.missing_parent"
 // }
 
 // type EthNewBlockIsInvalid struct {
@@ -288,7 +288,7 @@ func (l *EthTxReceived) EventName() string {
 // }
 
 // func (l *EthNewBlockIsInvalid) EventName() string {
-// 	return "eth.newblock.is_invalid"
+// 	return "webchain.newblock.is_invalid"
 // }
 
 // type EthNewBlockChainIsOlder struct {
@@ -301,7 +301,7 @@ func (l *EthTxReceived) EventName() string {
 // }
 
 // func (l *EthNewBlockChainIsOlder) EventName() string {
-// 	return "eth.newblock.chain.is_older"
+// 	return "webchain.newblock.chain.is_older"
 // }
 
 // type EthNewBlockChainIsCanonical struct {
@@ -314,7 +314,7 @@ func (l *EthTxReceived) EventName() string {
 // }
 
 // func (l *EthNewBlockChainIsCanonical) EventName() string {
-// 	return "eth.newblock.chain.is_cannonical"
+// 	return "webchain.newblock.chain.is_cannonical"
 // }
 
 // type EthNewBlockChainNotCanonical struct {
@@ -327,7 +327,7 @@ func (l *EthTxReceived) EventName() string {
 // }
 
 // func (l *EthNewBlockChainNotCanonical) EventName() string {
-// 	return "eth.newblock.chain.not_cannonical"
+// 	return "webchain.newblock.chain.not_cannonical"
 // }
 
 // type EthTxCreated struct {
@@ -340,7 +340,7 @@ func (l *EthTxReceived) EventName() string {
 // }
 
 // func (l *EthTxCreated) EventName() string {
-// 	return "eth.tx.created"
+// 	return "webchain.tx.created"
 // }
 
 // type EthTxBroadcasted struct {
@@ -352,7 +352,7 @@ func (l *EthTxReceived) EventName() string {
 // }
 
 // func (l *EthTxBroadcasted) EventName() string {
-// 	return "eth.tx.broadcasted"
+// 	return "webchain.tx.broadcasted"
 // }
 
 // type EthTxValidated struct {
@@ -364,7 +364,7 @@ func (l *EthTxReceived) EventName() string {
 // }
 
 // func (l *EthTxValidated) EventName() string {
-// 	return "eth.tx.validated"
+// 	return "webchain.tx.validated"
 // }
 
 // type EthTxIsInvalid struct {
@@ -377,5 +377,5 @@ func (l *EthTxReceived) EventName() string {
 // }
 
 // func (l *EthTxIsInvalid) EventName() string {
-// 	return "eth.tx.is_invalid"
+// 	return "webchain.tx.is_invalid"
 // }
