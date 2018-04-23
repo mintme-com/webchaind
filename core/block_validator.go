@@ -33,7 +33,7 @@ import (
 var (
 	DurationLimit          = big.NewInt(13) // The decision boundary on the blocktime duration used to determine whether difficulty should go up or not.
 	ExpDiffPeriod          = big.NewInt(100000)
-	MinimumDifficulty      = big.NewInt(1024)
+	MinimumDifficulty      = big.NewInt(10000)
 	MinGasLimit            = big.NewInt(5000)    // Minimum the gas limit may ever be.
 	TargetGasLimit         = big.NewInt(4712388) // The artificial target
 	DifficultyBoundDivisor = big.NewInt(2048)    // The bound divisor of the difficulty, used in the update calculations.
