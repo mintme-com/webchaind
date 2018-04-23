@@ -37,12 +37,12 @@ var (
 	}
 	walletCommand = cli.Command{
 		Name:  "wallet",
-		Usage: "Ethereum presale wallet",
+		Usage: "Webchain presale wallet",
 		Subcommands: []cli.Command{
 			{
 				Action: importWallet,
 				Name:   "import",
-				Usage:  "import ethereum presale wallet",
+				Usage:  "import webchain presale wallet",
 			},
 		},
 		Description: `
