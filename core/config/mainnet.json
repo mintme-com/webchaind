@@ -1,85 +1,46 @@
 {
     "identity": "mainnet",
-    "name": "Ethereum Classic Mainnet",
-    "state": null,
+    "name": "Webchain Mainnet",
+    "state": {
+        "startingNonce": 0
+    },
     "network": 1,
-    "consensus": "ethash",
+    "consensus": "cryptonight",
+    "genesis": {
+        "nonce": "0x0000000000000041",
+        "timestamp": "",
+        "parentHash": "",
+        "extraData": "",
+        "gasLimit": "0x03000000",
+        "difficulty": "0x000001",
+        "coinbase": "",
+        "alloc": {
+            "7b6c9e599ef108c27f33d878491c02801699c8f5": {
+                "balance": "350000000000000000000000000"
+            }
+        }
+    },
     "chainConfig": {
         "forks": [
             {
-                "name": "Homestead",
-                "block": 1150000,
-                "requiredHash": "0x0000000000000000000000000000000000000000000000000000000000000000",
-                "features": [
-                    {
-                        "id": "difficulty",
-                        "options": {
-                            "type": "homestead"
-                        }
-                    },
-                    {
-                        "id": "gastable",
-                        "options": {
-                            "type": "homestead"
-                        }
-                    }
-                ]
-            },
-            {
-                "name": "The DAO Hard Fork",
-                "block": 1920000,
-                "requiredHash": "0x94365e3a8c0b35089c1d1195081fe7489b528a84b22199c916180db8b28ade7f",
-                "features": []
-            },
-            {
-                "name": "GasReprice",
-                "block": 2500000,
-                "requiredHash": "0x0000000000000000000000000000000000000000000000000000000000000000",
-                "features": [
-                    {
-                        "id": "gastable",
-                        "options": {
-                            "type": "eip150"
-                        }
-                    }
-                ]
-            },
-            {
                 "name": "Diehard",
-                "block": 3000000,
+                "block": 1,
                 "requiredHash": "0x0000000000000000000000000000000000000000000000000000000000000000",
                 "features": [
                     {
                         "id": "eip155",
                         "options": {
-                            "chainID": 61
-                        }
-                    },
-                    {
-                        "id": "gastable",
-                        "options": {
-                            "type": "eip160"
-                        }
-                    },
-                    {
-                        "id": "difficulty",
-                        "options": {
-                            "length": 2000000,
-                            "type": "ecip1010"
+                            "chainID": 101
                         }
                     }
                 ]
             }
         ],
         "badHashes": [
-            {
-                "Block": 116522,
-                "Hash": "0x05bef30ef572270f654746da22639a7a0c97dd97a7050b9e252391996aaeb689"
-            }
         ]
     },
-	"include": [
-		"mainnet_genesis.json",
-		"mainnet_bootnodes.json"
-	]
+    "bootstrap": [
+        "enode://eccdca2d47bc27581ab59cdc707967566bbfb6134ee010f4518b4055a88990aaaaf182aee985431180a490cb0f9ff14ad781c3836ba7186378fdd444315d595f@212.32.255.80:30334",
+        "enode://facd7a22d3fa8d5fa39601fe192f1b8637f51194a8f64d8679459bef26abd81fbddbbb66ce4544bb3ddc3e890c6c4904463222e640d7b718fb3e051c85260025@212.32.255.195:30334"
+    ]
 }
