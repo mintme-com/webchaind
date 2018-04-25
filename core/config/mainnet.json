@@ -4,7 +4,7 @@
     "state": {
         "startingNonce": 0
     },
-    "network": 1,
+    "network": 321,
     "consensus": "cryptonight",
     "genesis": {
         "nonce": "0x0000000000000041",

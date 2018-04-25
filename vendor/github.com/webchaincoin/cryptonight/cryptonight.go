@@ -124,8 +124,7 @@ func (pow *Cryptonight) compute(ctx unsafe.Pointer, blockBytes []byte, nonce uin
 	return hash
 }
 
-func (pow *Cryptonight) Verify(block pow.Block) bool {
-	difficulty := block.Difficulty()
+func (pow *Cryptonight) VerifyBytes(headerBytes []byte, difficulty *big.Int, nonce uint64) bool {
 	/* Cannot happen if block header diff is validated prior to PoW, but can
 		 happen if PoW is checked first due to parallel PoW checking.
 	*/
@@ -135,13 +134,18 @@ func (pow *Cryptonight) Verify(block pow.Block) bool {
 	}
 
 	var ctx unsafe.Pointer = C.cryptonight_create()
-	headerBytes := types.HeaderToBytes(block.Header())
-	result := pow.compute(ctx, headerBytes, block.Nonce())
+	result := pow.compute(ctx, headerBytes, nonce)
 	C.cryptonight_destroy(ctx)
 
 	// The actual check.
 	target := new(big.Int).Div(maxUint256, difficulty)
 	return result.Big().Cmp(target) <= 0
+}
+
+func (pow *Cryptonight) Verify(block pow.Block) bool {
+	difficulty := block.Difficulty()
+	headerBytes := types.HeaderToBytes(block.Header())
+	return pow.VerifyBytes(headerBytes, difficulty, block.Nonce())
 }
 
 func New() *Cryptonight {
