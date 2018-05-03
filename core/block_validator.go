@@ -36,13 +36,13 @@ var (
 	MinimumDifficulty      = big.NewInt(10000)
 	MinGasLimit            = big.NewInt(5000)    // Minimum the gas limit may ever be.
 	TargetGasLimit         = big.NewInt(4712388) // The artificial target
-	DifficultyBoundDivisor = big.NewInt(2048)    // The bound divisor of the difficulty, used in the update calculations.
+	DifficultyBoundDivisor = big.NewInt(200)     // The bound divisor of the difficulty, used in the update calculations.
 	GasLimitBoundDivisor   = big.NewInt(1024)    // The bound divisor of the gas limit, used in update calculations.
 )
 
 var (
 	big10      = big.NewInt(10)
-	bigMinus99 = big.NewInt(-99)
+	bigMinus20 = big.NewInt(-20)
 )
 
 // Difficulty allows passing configurable options to a given difficulty algorithm.
@@ -292,7 +292,7 @@ func calcDifficultyDefused(time, parentTime uint64, parentNumber, parentDiff *bi
 	// https://github.com/ethereum/EIPs/blob/master/EIPS/eip-2.mediawiki
 	// algorithm:
 	// diff = (parent_diff +
-	//         (parent_diff / 2048 * max(1 - (block_timestamp - parent_timestamp) // 10, -99))
+	//         (parent_diff / 200 * max(1 - (block_timestamp - parent_timestamp) // 10, -20))
 	//        )
 
 	bigTime := new(big.Int).SetUint64(time)
@@ -307,12 +307,12 @@ func calcDifficultyDefused(time, parentTime uint64, parentNumber, parentDiff *bi
 	x.Div(x, big10)
 	x.Sub(common.Big1, x)
 
-	// max(1 - (block_timestamp - parent_timestamp) // 10, -99)))
-	if x.Cmp(bigMinus99) < 0 {
-		x.Set(bigMinus99)
+	// max(1 - (block_timestamp - parent_timestamp) // 10, -20)))
+	if x.Cmp(bigMinus20) < 0 {
+		x.Set(bigMinus20)
 	}
 
-	// (parent_diff + parent_diff // 2048 * max(1 - (block_timestamp - parent_timestamp) // 10, -99))
+	// (parent_diff + parent_diff // 200 * max(1 - (block_timestamp - parent_timestamp) // 10, -20))
 	y.Div(parentDiff, DifficultyBoundDivisor)
 	x.Mul(y, x)
 	x.Add(parentDiff, x)
