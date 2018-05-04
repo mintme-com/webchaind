@@ -35,7 +35,7 @@ import (
 var Version = "unknown"
 
 var (
-	listenAddr  = flag.String("addr", ":31339", "listen address")
+	listenAddr  = flag.String("addr", ":31340", "listen address")
 	genKey      = flag.String("genkey", "", "generate a node key and quit")
 	nodeKeyFile = flag.String("nodekey", "", "private key filename")
 	nodeKeyHex  = flag.String("nodekeyhex", "", "private key as hex (for testing)")

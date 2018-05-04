@@ -33,7 +33,7 @@ import (
 	"github.com/ethereumproject/go-ethereum/rlp"
 )
 
-const Version = 4
+const Version = 44
 
 // Errors
 var (
@@ -47,6 +47,7 @@ var (
 	errTimeout          = errors.New("RPC timeout")
 	errClockWarp        = errors.New("reply deadline too far in the future")
 	errClosed           = errors.New("socket closed")
+	errVersion          = errors.New("wrong version")
 
 	// Note: golang/net.IP provides some similar functionality via #IsLinkLocalUnicast, ...Multicast, etc.
 	// I would rather duplicate the information in a unified and comprehensive system than
@@ -682,6 +683,11 @@ func (req *ping) handle(t *udp, from *net.UDPAddr, fromID NodeID, mac []byte) er
 	if expired(req.Expiration) {
 		return errExpired
 	}
+
+	if req.Version != Version {
+		return errVersion
+	}
+
 	t.send(from, pongPacket, pong{
 		To:         makeEndpoint(from, req.From.TCP),
 		ReplyTok:   mac,
