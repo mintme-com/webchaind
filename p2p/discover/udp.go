@@ -1,18 +1,19 @@
 // Copyright 2015 The go-ethereum Authors
-// This file is part of the go-ethereum library.
+// Copyright 2018 Webchain project
+// This file is part of Webchain.
 //
-// The go-ethereum library is free software: you can redistribute it and/or modify
+// Webchain is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Lesser General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
 //
-// The go-ethereum library is distributed in the hope that it will be useful,
+// Webchain is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 // GNU Lesser General Public License for more details.
 //
 // You should have received a copy of the GNU Lesser General Public License
-// along with the go-ethereum library. If not, see <http://www.gnu.org/licenses/>.
+// along with Webchain. If not, see <http://www.gnu.org/licenses/>.
 
 package discover
 
@@ -25,15 +26,15 @@ import (
 	"net"
 	"time"
 
-	"github.com/ethereumproject/go-ethereum/crypto"
-	"github.com/ethereumproject/go-ethereum/logger"
-	"github.com/ethereumproject/go-ethereum/logger/glog"
-	"github.com/ethereumproject/go-ethereum/p2p/distip"
-	"github.com/ethereumproject/go-ethereum/p2p/nat"
-	"github.com/ethereumproject/go-ethereum/rlp"
+	"github.com/webchain-network/webchaind/crypto"
+	"github.com/webchain-network/webchaind/logger"
+	"github.com/webchain-network/webchaind/logger/glog"
+	"github.com/webchain-network/webchaind/p2p/distip"
+	"github.com/webchain-network/webchaind/p2p/nat"
+	"github.com/webchain-network/webchaind/rlp"
 )
 
-const Version = 44
+const Version = 45
 
 // Errors
 var (

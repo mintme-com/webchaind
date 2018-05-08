@@ -4,10 +4,10 @@
     "state": {
         "startingNonce": 0
     },
-    "network": 37029,
+    "network": 37129,
     "consensus": "cryptonight",
     "genesis": {
-        "nonce": "0x0000000000000041",
+        "nonce": "0x0000000000000043",
         "timestamp": "",
         "parentHash": "",
         "extraData": "",
@@ -15,7 +15,7 @@
         "difficulty": "0x000001",
         "coinbase": "",
         "alloc": {
-            "7b6c9e599ef108c27f33d878491c02801699c8f5": {
+            "8cc415d55815d092d59d1ff66bd751bae519c9ec": {
                 "balance": "350000000000000000000000000"
             }
         }
@@ -40,7 +40,7 @@
         ]
     },
     "bootstrap": [
-        "enode://c6ec9af50be804e32b73f0a24f145b55035d48da4497f9f1cdfd8dfe669288dd0ad39918bfd59a32e4a068daaec146e23381c10c7f55b45f586e6ad14b2071bc@212.32.255.80:31340",
-        "enode://33f1c6a9fc7e32070b8dfa654ddd18fd3cc8c11f9f21d371414634e8caca758a4166c5caca7f555c0d8481e80452492d1b4fb6b5cc71024858492f35c63737d4@212.32.255.195:31340"
+        "enode://c6ec9af50be804e32b73f0a24f145b55035d48da4497f9f1cdfd8dfe669288dd0ad39918bfd59a32e4a068daaec146e23381c10c7f55b45f586e6ad14b2071bc@212.32.255.80:31440",
+        "enode://33f1c6a9fc7e32070b8dfa654ddd18fd3cc8c11f9f21d371414634e8caca758a4166c5caca7f555c0d8481e80452492d1b4fb6b5cc71024858492f35c63737d4@212.32.255.195:31440"
     ]
 }
