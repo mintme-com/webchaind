@@ -1,4 +1,5 @@
 // Copyright 2014 The go-ethereum Authors
+// Copyright 2018 Webchain project
 // This file is part of Webchain.
 //
 // Webchain is free software: you can redistribute it and/or modify
@@ -42,7 +43,7 @@ var ProtocolVersions = []uint{eth63, eth62}
 var ProtocolLengths = []uint64{17, 8}
 
 const (
-	NetworkId          = 37029
+	NetworkId          = 37129
 	ProtocolMaxMsgSize = 10 * 1024 * 1024 // Maximum cap on the size of a protocol message
 )
 

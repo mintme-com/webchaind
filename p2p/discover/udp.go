@@ -1,4 +1,5 @@
 // Copyright 2015 The go-ethereum Authors
+// Copyright 2018 Webchain project
 // This file is part of Webchain.
 //
 // Webchain is free software: you can redistribute it and/or modify
@@ -33,7 +34,7 @@ import (
 	"github.com/webchain-network/webchaind/rlp"
 )
 
-const Version = 44
+const Version = 45
 
 // Errors
 var (

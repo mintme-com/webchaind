@@ -1,4 +1,5 @@
 // Copyright 2015 The go-ethereum Authors
+// Copyright 2018 Webchain project
 // This file is part of Webchain.
 //
 // Webchain is free software: you can redistribute it and/or modify
@@ -35,7 +36,7 @@ import (
 var Version = "unknown"
 
 var (
-	listenAddr  = flag.String("addr", ":31340", "listen address")
+	listenAddr  = flag.String("addr", ":31440", "listen address")
 	genKey      = flag.String("genkey", "", "generate a node key and quit")
 	nodeKeyFile = flag.String("nodekey", "", "private key filename")
 	nodeKeyHex  = flag.String("nodekeyhex", "", "private key as hex (for testing)")
