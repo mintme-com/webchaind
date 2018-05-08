@@ -154,7 +154,11 @@ Webchaind is able to create, import, update, unlock, and otherwise manage your p
 $ webchaind account new
 ```
 
-This command will create a new account and prompt you to enter a passphrase to protect your account.
+This command will create a new account and prompt you to enter a passphrase to protect your account. It will return output similar to:
+```
+Address: {52a8029355231d78099667a95d5875fab0d4fc4d}
+```
+So your address is: 0x52a8029355231d78099667a95d5875fab0d4fc4d
 
 Other `account` subcommands include:
 ```
