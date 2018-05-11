@@ -321,7 +321,7 @@ func accountCreate(ctx *cli.Context) error {
 	if err != nil {
 		log.Fatal("Failed to create account: ", err)
 	}
-	fmt.Printf("Address: {%x}\n", account.Address)
+	fmt.Printf("Address: 0x%x\n", account.Address)
 	return nil
 }
 
@@ -357,7 +357,7 @@ func importWallet(ctx *cli.Context) error {
 	if err != nil {
 		log.Fatal(err)
 	}
-	fmt.Printf("Address: {%x}\n", acct.Address)
+	fmt.Printf("Address: 0x%x\n", acct.Address)
 	return nil
 }
 
@@ -376,6 +376,6 @@ func accountImport(ctx *cli.Context) error {
 	if err != nil {
 		log.Fatal("Could not create the account: ", err)
 	}
-	fmt.Printf("Address: {%x}\n", acct.Address)
+	fmt.Printf("Address: 0x%x\n", acct.Address)
 	return nil
 }
