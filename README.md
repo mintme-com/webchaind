@@ -148,7 +148,7 @@ In case of using `--mine` together with `--fast`, webchaind will operate as desc
 
 ### Create or manage account(s)
 
-Webchaind is able to create, import, update, unlock, and otherwise manage your private (encrypted) key files. Key files are in JSON format and, by default, stored in the respective chain folder's `/keystore` directory; you can specify a custom location with the `--keystore` flag.
+<a href="https://github.com/webchain-network/webchaind/releases" target="_blank">Webchaind</a> is able to create, import, update, unlock, and otherwise manage your private (encrypted) key files. Key files are in JSON format and, by default, stored in the respective chain folder's `/keystore` directory; you can specify a custom location with the `--keystore` flag.
 
 ```
 $ webchaind account new
