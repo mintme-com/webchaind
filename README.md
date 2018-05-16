@@ -148,7 +148,7 @@ In case of using `--mine` together with `--fast`, webchaind will operate as desc
 
 ### Create or manage account(s)
 
-<a href="https://github.com/webchain-network/webchaind/releases" target="_blank">Webchaind</a> is able to create, import, update, unlock, and otherwise manage your private (encrypted) key files. Key files are in JSON format and, by default, stored in the respective chain folder's `/keystore` directory; you can specify a custom location with the `--keystore` flag.
+[Webchaind](https://github.com/webchain-network/webchaind/releases) is able to create, import, update, unlock, and otherwise manage your private (encrypted) key files. Key files are in JSON format and, by default, stored in the respective chain folder's `/keystore` directory; you can specify a custom location with the `--keystore` flag.
 
 ```
 $ webchaind account new
@@ -172,6 +172,14 @@ SUBCOMMANDS:
 ```
 
 Learn more at the [Accounts Wiki Page](https://github.com/webchain-network/webchaind/wiki/Managing-Accounts). If you're interested in using webchaind to manage a lot (~100,000+) of accounts, please visit the [Indexing Accounts Wiki page](https://github.com/webchain-network/webchaind/wiki/Indexing-Accounts).
+
+
+### Fast synchronisation
+
+Webchaind syncs with the network automatically after start. However, this method is very slow. Alternatively, you can download blockchain file here: https://webchain.network/blockchain.raw and import it by executing:
+```
+$ webchaind --fakepow import <path where you downloaded the blockchain>/blockchain.raw
+```
 
 
 ### Interact with the Javascript console
