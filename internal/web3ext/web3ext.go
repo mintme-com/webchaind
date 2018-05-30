@@ -1,18 +1,19 @@
 // Copyright 2015 The go-ethereum Authors
-// This file is part of the go-ethereum library.
+// Copyright 2018 Webchain project
+// This file is part of Webchain.
 //
-// The go-ethereum library is free software: you can redistribute it and/or modify
+// Webchain is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Lesser General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
 //
-// The go-ethereum library is distributed in the hope that it will be useful,
+// Webchain is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 // GNU Lesser General Public License for more details.
 //
 // You should have received a copy of the GNU Lesser General Public License
-// along with the go-ethereum library. If not, see <http://www.gnu.org/licenses/>.
+// along with Webchain. If not, see <http://www.gnu.org/licenses/>.
 
 // package web3ext contains geth specific web3.js extensions.
 package web3ext
@@ -20,7 +21,7 @@ package web3ext
 var Modules = map[string]string{
 	"admin":    Admin_JS,
 	"debug":    Debug_JS,
-	"eth":      Eth_JS,
+	"webchain": Eth_JS,
 	"miner":    Miner_JS,
 	"net":      Net_JS,
 	"personal": Personal_JS,
@@ -170,11 +171,6 @@ web3._extend({
 			params: 1
 		}),
 		new web3._extend.Method({
-			name: 'seedHash',
-			call: 'debug_seedHash',
-			params: 1
-		}),
-		new web3._extend.Method({
 			name: 'dumpBlock',
 			call: 'debug_dumpBlock',
 			params: 1
@@ -214,7 +210,7 @@ web3._extend({
 
 const Eth_JS = `
 web3._extend({
-	property: 'eth',
+	property: 'webchain',
 	methods:
 	[
 		new web3._extend.Method({
@@ -302,22 +298,6 @@ web3._extend({
 			call: 'miner_setGasPrice',
 			params: 1,
 			inputFormatter: [web3._extend.utils.fromDecimal]
-		}),
-		new web3._extend.Method({
-			name: 'startAutoDAG',
-			call: 'miner_startAutoDAG',
-			params: 0
-		}),
-		new web3._extend.Method({
-			name: 'stopAutoDAG',
-			call: 'miner_stopAutoDAG',
-			params: 0
-		}),
-		new web3._extend.Method({
-			name: 'makeDAG',
-			call: 'miner_makeDAG',
-			params: 1,
-			inputFormatter: [web3._extend.formatters.inputDefaultBlockNumberFormatter]
 		})
 	],
 	properties: []

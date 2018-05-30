@@ -1,6 +1,6 @@
 package miner
 
-import "github.com/ethereumproject/go-ethereum/logger"
+import "github.com/webchain-network/webchaind/logger"
 
 var mlogMiner = logger.MLogRegisterAvailable("miner", mlogMinerLines)
 

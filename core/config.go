@@ -1,18 +1,19 @@
 // Copyright 2016 The go-ethereum Authors
-// This file is part of the go-ethereum library.
+// Copyright 2018 Webchain project
+// This file is part of Webchain.
 //
-// The go-ethereum library is free software: you can redistribute it and/or modify
+// Webchain is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Lesser General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
 //
-// The go-ethereum library is distributed in the hope that it will be useful,
+// Webchain is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 // GNU Lesser General Public License for more details.
 //
 // You should have received a copy of the GNU Lesser General Public License
-// along with the go-ethereum library. If not, see <http://www.gnu.org/licenses/>.
+// along with Webchain. If not, see <http://www.gnu.org/licenses/>.
 
 package core
 
@@ -34,14 +35,14 @@ import (
 	"io"
 	"strings"
 
-	"github.com/ethereumproject/go-ethereum/common"
-	"github.com/ethereumproject/go-ethereum/core/state"
-	"github.com/ethereumproject/go-ethereum/core/types"
-	"github.com/ethereumproject/go-ethereum/core/vm"
-	"github.com/ethereumproject/go-ethereum/ethdb"
-	"github.com/ethereumproject/go-ethereum/logger"
-	"github.com/ethereumproject/go-ethereum/logger/glog"
-	"github.com/ethereumproject/go-ethereum/p2p/discover"
+	"github.com/webchain-network/webchaind/common"
+	"github.com/webchain-network/webchaind/core/state"
+	"github.com/webchain-network/webchaind/core/types"
+	"github.com/webchain-network/webchaind/core/vm"
+	"github.com/webchain-network/webchaind/ethdb"
+	"github.com/webchain-network/webchaind/logger"
+	"github.com/webchain-network/webchaind/logger/glog"
+	"github.com/webchain-network/webchaind/p2p/discover"
 )
 
 var (
@@ -59,7 +60,7 @@ type SufficientChainConfig struct {
 	Name            string           `json:"name,omitempty"`
 	State           *StateConfig     `json:"state"`     // don't omitempty for clarity of potential custom options
 	Network         int              `json:"network"`   // eth.NetworkId (mainnet=1, morden=2)
-	Consensus       string           `json:"consensus"` // pow type (ethash OR ethash-test)
+	Consensus       string           `json:"consensus"` // pow type (cryptonight OR cryptonight-test)
 	Genesis         *GenesisDump     `json:"genesis"`
 	ChainConfig     *ChainConfig     `json:"chainConfig"`
 	Bootstrap       []string         `json:"bootstrap"`
@@ -81,7 +82,6 @@ type GenesisDump struct {
 	ExtraData  prefixedHex `json:"extraData"`
 	GasLimit   prefixedHex `json:"gasLimit"`
 	Difficulty prefixedHex `json:"difficulty"`
-	Mixhash    prefixedHex `json:"mixhash"`
 	Coinbase   prefixedHex `json:"coinbase"`
 
 	// Alloc maps accounts by their address.
@@ -172,7 +172,7 @@ func (c *SufficientChainConfig) IsValid() (string, bool) {
 		return "networkId", false
 	}
 
-	if c := c.Consensus; c == "" || (c != "ethash" && c != "ethash-test") {
+	if c := c.Consensus; c == "" || (c != "cryptonight" && c != "cryptonight-test") {
 		return "consensus", false
 	}
 
@@ -225,9 +225,6 @@ func (g *GenesisDump) Header() (*types.Header, error) {
 	}
 	if h.Difficulty, err = g.Difficulty.Int(); err != nil {
 		return nil, fmt.Errorf("malformed difficulty: %s", err)
-	}
-	if err = g.Mixhash.Decode(h.MixDigest[:]); err != nil {
-		return nil, fmt.Errorf("malformed mixhash: %s", err)
 	}
 	if err := g.Coinbase.Decode(h.Coinbase[:]); err != nil {
 		return nil, fmt.Errorf("malformed coinbase: %s", err)
@@ -389,17 +386,13 @@ func (c *ChainConfig) GetSigner(blockNumber *big.Int) types.Signer {
 func (c *ChainConfig) GasTable(num *big.Int) *vm.GasTable {
 	f, _, configured := c.GetFeature(num, "gastable")
 	if !configured {
-		return DefaultHomeSteadGasTable
+		return DefaultDiehardGasTable
 	}
 	name, ok := f.GetString("type")
 	if !ok {
 		name = ""
 	} // will wall to default panic
 	switch name {
-	case "homestead":
-		return DefaultHomeSteadGasTable
-	case "eip150":
-		return DefaultGasRepriceGasTable
 	case "eip160":
 		return DefaultDiehardGasTable
 	default:
@@ -533,9 +526,9 @@ func parseExternalChainConfig(mainConfigFile string, open func(string) (io.ReadC
 		config.Identity = config.ID
 	}
 
-	// Make 'ethash' default (backwards compatibility)
+	// Make 'cryptonight' default (backwards compatibility)
 	if config.Consensus == "" {
-		config.Consensus = "ethash"
+		config.Consensus = "cryptonight"
 	}
 
 	// Parse bootstrap nodes
@@ -783,7 +776,6 @@ func MakeGenesisDump(chaindb ethdb.Database) (*GenesisDump, error) {
 	parentHash := genesisHeader.ParentHash.Hex()
 	gasLimit := common.BigToHash(genesisHeader.GasLimit).Hex()
 	difficulty := common.BigToHash(genesisHeader.Difficulty).Hex()
-	mixHash := genesisHeader.MixDigest.Hex()
 	coinbase := genesisHeader.Coinbase.Hex()
 
 	var dump = &GenesisDump{
@@ -793,7 +785,6 @@ func MakeGenesisDump(chaindb ethdb.Database) (*GenesisDump, error) {
 		//ExtraData:  prefixedHex(extra),
 		GasLimit:   prefixedHex(gasLimit),
 		Difficulty: prefixedHex(difficulty),
-		Mixhash:    prefixedHex(mixHash),
 		Coinbase:   prefixedHex(coinbase),
 		//Alloc: ,
 	}

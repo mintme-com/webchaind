@@ -1,18 +1,18 @@
 // Copyright 2015 The go-ethereum Authors
-// This file is part of the go-ethereum library.
+// This file is part of Webchain.
 //
-// The go-ethereum library is free software: you can redistribute it and/or modify
+// Webchain is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Lesser General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
 //
-// The go-ethereum library is distributed in the hope that it will be useful,
+// Webchain is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 // GNU Lesser General Public License for more details.
 //
 // You should have received a copy of the GNU Lesser General Public License
-// along with the go-ethereum library. If not, see <http://www.gnu.org/licenses/>.
+// along with Webchain. If not, see <http://www.gnu.org/licenses/>.
 
 // package filters implements an ethereum filtering system for block,
 // transactions and log events.
@@ -23,9 +23,9 @@ import (
 	"sync"
 	"time"
 
-	"github.com/ethereumproject/go-ethereum/core"
-	"github.com/ethereumproject/go-ethereum/core/vm"
-	"github.com/ethereumproject/go-ethereum/event"
+	"github.com/webchain-network/webchaind/core"
+	"github.com/webchain-network/webchaind/core/vm"
+	"github.com/webchain-network/webchaind/event"
 )
 
 // FilterType determines the type of filter and is used to put the filter in to

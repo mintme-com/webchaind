@@ -1,18 +1,19 @@
 // Copyright 2015 The go-ethereum Authors
-// This file is part of the go-ethereum library.
+// Copyright 2018 Webchain project
+// This file is part of Webchain.
 //
-// The go-ethereum library is free software: you can redistribute it and/or modify
+// Webchain is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Lesser General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
 //
-// The go-ethereum library is distributed in the hope that it will be useful,
+// Webchain is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 // GNU Lesser General Public License for more details.
 //
 // You should have received a copy of the GNU Lesser General Public License
-// along with the go-ethereum library. If not, see <http://www.gnu.org/licenses/>.
+// along with Webchain. If not, see <http://www.gnu.org/licenses/>.
 
 package eth
 
@@ -30,24 +31,23 @@ import (
 	"sync"
 	"time"
 
-	"github.com/ethereumproject/ethash"
-	"github.com/ethereumproject/go-ethereum/accounts"
-	"github.com/ethereumproject/go-ethereum/common"
-	"github.com/ethereumproject/go-ethereum/common/compiler"
-	"github.com/ethereumproject/go-ethereum/core"
-	"github.com/ethereumproject/go-ethereum/core/state"
-	"github.com/ethereumproject/go-ethereum/core/types"
-	"github.com/ethereumproject/go-ethereum/core/vm"
-	"github.com/ethereumproject/go-ethereum/crypto"
-	"github.com/ethereumproject/go-ethereum/ethdb"
-	"github.com/ethereumproject/go-ethereum/event"
-	"github.com/ethereumproject/go-ethereum/logger"
-	"github.com/ethereumproject/go-ethereum/logger/glog"
-	ethMetrics "github.com/ethereumproject/go-ethereum/metrics"
-	"github.com/ethereumproject/go-ethereum/miner"
-	"github.com/ethereumproject/go-ethereum/p2p"
-	"github.com/ethereumproject/go-ethereum/rlp"
-	"github.com/ethereumproject/go-ethereum/rpc"
+	"github.com/webchain-network/webchaind/accounts"
+	"github.com/webchain-network/webchaind/common"
+	"github.com/webchain-network/webchaind/common/compiler"
+	"github.com/webchain-network/webchaind/core"
+	"github.com/webchain-network/webchaind/core/state"
+	"github.com/webchain-network/webchaind/core/types"
+	"github.com/webchain-network/webchaind/core/vm"
+	"github.com/webchain-network/webchaind/crypto"
+	"github.com/webchain-network/webchaind/ethdb"
+	"github.com/webchain-network/webchaind/event"
+	"github.com/webchain-network/webchaind/logger"
+	"github.com/webchain-network/webchaind/logger/glog"
+	ethMetrics "github.com/webchain-network/webchaind/metrics"
+	"github.com/webchain-network/webchaind/miner"
+	"github.com/webchain-network/webchaind/p2p"
+	"github.com/webchain-network/webchaind/rlp"
+	"github.com/webchain-network/webchaind/rpc"
 )
 
 const defaultGas = uint64(90000)
@@ -207,8 +207,8 @@ func (s *PublicMinerAPI) Mining() bool {
 
 // SubmitWork can be used by external miner to submit their POW solution. It returns an indication if the work was
 // accepted. Note, this is not an indication if the provided work was valid!
-func (s *PublicMinerAPI) SubmitWork(nonce rpc.HexNumber, solution, digest common.Hash) bool {
-	return s.agent.SubmitWork(nonce.Uint64(), digest, solution)
+func (s *PublicMinerAPI) SubmitWork(nonce rpc.HexNumber, solution common.Hash) bool {
+	return s.agent.SubmitWork(nonce.Uint64(), solution)
 }
 
 // GetWork returns a work package for external miner. The work package consists of 3 strings
@@ -250,8 +250,6 @@ func NewPrivateMinerAPI(e *Ethereum) *PrivateMinerAPI {
 // Start the miner with the given number of threads. If threads is nil the number of
 // workers started is equal to the number of logical CPU's that are usable by this process.
 func (s *PrivateMinerAPI) Start(threads *rpc.HexNumber) (bool, error) {
-	s.e.StartAutoDAG()
-
 	if threads == nil {
 		threads = rpc.NewHexNumber(runtime.NumCPU())
 	}
@@ -279,27 +277,6 @@ func (s *PrivateMinerAPI) SetGasPrice(gasPrice rpc.HexNumber) bool {
 func (s *PrivateMinerAPI) SetEtherbase(etherbase common.Address) bool {
 	s.e.SetEtherbase(etherbase)
 	return true
-}
-
-// StartAutoDAG starts auto DAG generation. This will prevent the DAG generating on epoch change
-// which will cause the node to stop mining during the generation process.
-func (s *PrivateMinerAPI) StartAutoDAG() bool {
-	s.e.StartAutoDAG()
-	return true
-}
-
-// StopAutoDAG stops auto DAG generation
-func (s *PrivateMinerAPI) StopAutoDAG() bool {
-	s.e.StopAutoDAG()
-	return true
-}
-
-// MakeDAG creates the new DAG for the given block number
-func (s *PrivateMinerAPI) MakeDAG(blockNr rpc.BlockNumber) (bool, error) {
-	if err := ethash.MakeDAG(uint64(blockNr.Int64()), ""); err != nil {
-		return false, err
-	}
-	return true, nil
 }
 
 // PublicTxPoolAPI offers and API for the transaction pool. It only operates on data that is non confidential.
@@ -1703,19 +1680,6 @@ func (api *PublicDebugAPI) PrintBlock(number uint64) (string, error) {
 		return "", fmt.Errorf("block #%d not found", number)
 	}
 	return fmt.Sprintf("%s", block), nil
-}
-
-// SeedHash retrieves the seed hash of a block.
-func (api *PublicDebugAPI) SeedHash(number uint64) (string, error) {
-	block := api.eth.BlockChain().GetBlockByNumber(number)
-	if block == nil {
-		return "", fmt.Errorf("block #%d not found", number)
-	}
-	hash, err := ethash.GetSeedHash(number)
-	if err != nil {
-		return "", err
-	}
-	return fmt.Sprintf("0x%x", hash), nil
 }
 
 // Metrics return all available registered metrics for the client.

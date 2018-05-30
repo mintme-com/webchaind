@@ -1,18 +1,19 @@
 // Copyright 2015 The go-ethereum Authors
-// This file is part of the go-ethereum library.
+// Copyright 2018 Webchain project
+// This file is part of Webchain.
 //
-// The go-ethereum library is free software: you can redistribute it and/or modify
+// Webchain is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Lesser General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
 //
-// The go-ethereum library is distributed in the hope that it will be useful,
+// Webchain is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 // GNU Lesser General Public License for more details.
 //
 // You should have received a copy of the GNU Lesser General Public License
-// along with the go-ethereum library. If not, see <http://www.gnu.org/licenses/>.
+// along with Webchain. If not, see <http://www.gnu.org/licenses/>.
 
 package core
 
@@ -20,12 +21,12 @@ import (
 	"fmt"
 	"math/big"
 
-	"github.com/ethereumproject/go-ethereum/common"
-	"github.com/ethereumproject/go-ethereum/core/state"
-	"github.com/ethereumproject/go-ethereum/core/types"
-	"github.com/ethereumproject/go-ethereum/ethdb"
-	"github.com/ethereumproject/go-ethereum/event"
-	"github.com/ethereumproject/go-ethereum/pow"
+	"github.com/webchain-network/webchaind/common"
+	"github.com/webchain-network/webchaind/core/state"
+	"github.com/webchain-network/webchaind/core/types"
+	"github.com/webchain-network/webchaind/ethdb"
+	"github.com/webchain-network/webchaind/event"
+	"github.com/webchain-network/webchaind/pow"
 )
 
 /*
@@ -52,44 +53,12 @@ func MakeChainConfig() *ChainConfig {
 	}
 }
 
-func MakeDiehardChainConfig() *ChainConfig {
-	return &ChainConfig{
-		Forks: []*Fork{
-			{
-				Name:  "Diehard",
-				Block: big.NewInt(0),
-				Features: []*ForkFeature{
-					{
-						ID: "eip155",
-						Options: ChainFeatureConfigOptions{
-							"chainID": 63,
-						},
-					},
-					{ // ecip1010 bomb delay
-						ID: "gastable",
-						Options: ChainFeatureConfigOptions{
-							"type": "eip160",
-						},
-					},
-					{ // ecip1010 bomb delay
-						ID: "difficulty",
-						Options: ChainFeatureConfigOptions{
-							"type":   "ecip1010",
-							"length": 2000000,
-						},
-					},
-				},
-			},
-		},
-	}
-}
-
 // FakePow is a non-validating proof of work implementation.
 // It returns true from Verify for any block.
 type FakePow struct{}
 
-func (f FakePow) Search(block pow.Block, stop <-chan struct{}, index int) (uint64, []byte) {
-	return 0, nil
+func (f FakePow) Search(block pow.Block, stop <-chan struct{}, index int) (uint64) {
+	return 0
 }
 func (f FakePow) Verify(block pow.Block) bool { return true }
 func (f FakePow) GetHashrate() int64          { return 0 }

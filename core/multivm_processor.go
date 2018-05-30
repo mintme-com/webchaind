@@ -5,13 +5,13 @@ package core
 import (
 	"math/big"
 
-	"github.com/ethereumproject/go-ethereum/common"
-	"github.com/ethereumproject/go-ethereum/core/state"
-	"github.com/ethereumproject/go-ethereum/core/types"
-	evm "github.com/ethereumproject/go-ethereum/core/vm"
-	"github.com/ethereumproject/go-ethereum/crypto"
-	"github.com/ethereumproject/go-ethereum/logger"
-	"github.com/ethereumproject/go-ethereum/logger/glog"
+	"github.com/webchain-network/webchaind/common"
+	"github.com/webchain-network/webchaind/core/state"
+	"github.com/webchain-network/webchaind/core/types"
+	evm "github.com/webchain-network/webchaind/core/vm"
+	"github.com/webchain-network/webchaind/crypto"
+	"github.com/webchain-network/webchaind/logger"
+	"github.com/webchain-network/webchaind/logger/glog"
 	"github.com/ethereumproject/sputnikvm-ffi/go/sputnikvm"
 )
 

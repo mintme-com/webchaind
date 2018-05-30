@@ -2,8 +2,8 @@ package eth
 
 import (
 	"bytes"
-	"github.com/ethereumproject/go-ethereum/core/types"
-	"github.com/ethereumproject/go-ethereum/logger"
+	"github.com/webchain-network/webchaind/core/types"
+	"github.com/webchain-network/webchaind/logger"
 	"strings"
 	"testing"
 )

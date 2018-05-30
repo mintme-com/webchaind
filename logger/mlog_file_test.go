@@ -10,7 +10,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/ethereumproject/go-ethereum/common"
+	"github.com/webchain-network/webchaind/common"
 )
 
 var mlogExample1T = &MLogT{

@@ -1,18 +1,19 @@
 // Copyright 2014 The go-ethereum Authors
-// This file is part of the go-ethereum library.
+// Copyright 2018 Webchain project
+// This file is part of Webchain.
 //
-// The go-ethereum library is free software: you can redistribute it and/or modify
+// Webchain is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Lesser General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
 //
-// The go-ethereum library is distributed in the hope that it will be useful,
+// Webchain is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 // GNU Lesser General Public License for more details.
 //
 // You should have received a copy of the GNU Lesser General Public License
-// along with the go-ethereum library. If not, see <http://www.gnu.org/licenses/>.
+// along with Webchain. If not, see <http://www.gnu.org/licenses/>.
 
 // Package miner implements Ethereum block creation and mining.
 package miner
@@ -22,15 +23,15 @@ import (
 	"math/big"
 	"sync/atomic"
 
-	"github.com/ethereumproject/go-ethereum/common"
-	"github.com/ethereumproject/go-ethereum/core"
-	"github.com/ethereumproject/go-ethereum/core/state"
-	"github.com/ethereumproject/go-ethereum/core/types"
-	"github.com/ethereumproject/go-ethereum/eth/downloader"
-	"github.com/ethereumproject/go-ethereum/event"
-	"github.com/ethereumproject/go-ethereum/logger"
-	"github.com/ethereumproject/go-ethereum/logger/glog"
-	"github.com/ethereumproject/go-ethereum/pow"
+	"github.com/webchain-network/webchaind/common"
+	"github.com/webchain-network/webchaind/core"
+	"github.com/webchain-network/webchaind/core/state"
+	"github.com/webchain-network/webchaind/core/types"
+	"github.com/webchain-network/webchaind/eth/downloader"
+	"github.com/webchain-network/webchaind/event"
+	"github.com/webchain-network/webchaind/logger"
+	"github.com/webchain-network/webchaind/logger/glog"
+	"github.com/webchain-network/webchaind/pow"
 )
 
 // HeaderExtra is a freeform description.
@@ -165,12 +166,6 @@ func (self *Miner) Mining() bool {
 
 func (self *Miner) HashRate() (tot int64) {
 	tot += self.pow.GetHashrate()
-	// do we care this might race? is it worth we're rewriting some
-	// aspects of the worker/locking up agents so we can get an accurate
-	// hashrate?
-	for agent := range self.worker.agents {
-		tot += agent.GetHashRate()
-	}
 	return
 }
 

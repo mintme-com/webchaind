@@ -1,18 +1,19 @@
 // Copyright 2015 The go-ethereum Authors
-// This file is part of the go-ethereum library.
+// Copyright 2018 Webchain project
+// This file is part of Webchain.
 //
-// The go-ethereum library is free software: you can redistribute it and/or modify
+// Webchain is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Lesser General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
 //
-// The go-ethereum library is distributed in the hope that it will be useful,
+// Webchain is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 // GNU Lesser General Public License for more details.
 //
 // You should have received a copy of the GNU Lesser General Public License
-// along with the go-ethereum library. If not, see <http://www.gnu.org/licenses/>.
+// along with Webchain. If not, see <http://www.gnu.org/licenses/>.
 
 package miner
 
@@ -21,10 +22,9 @@ import (
 
 	"sync/atomic"
 
-	"github.com/ethereumproject/go-ethereum/common"
-	"github.com/ethereumproject/go-ethereum/logger"
-	"github.com/ethereumproject/go-ethereum/logger/glog"
-	"github.com/ethereumproject/go-ethereum/pow"
+	"github.com/webchain-network/webchaind/logger"
+	"github.com/webchain-network/webchaind/logger/glog"
+	"github.com/webchain-network/webchaind/pow"
 )
 
 type CpuAgent struct {
@@ -118,9 +118,9 @@ func (self *CpuAgent) mine(work *Work, stop <-chan struct{}) {
 	glog.V(logger.Debug).Infof("(re)started agent[%d]. mining...\n", self.index)
 
 	// Mine
-	nonce, mixDigest := self.pow.Search(work.Block, stop, self.index)
+	nonce := self.pow.Search(work.Block, stop, self.index)
 	if nonce != 0 {
-		block := work.Block.WithMiningResult(nonce, common.BytesToHash(mixDigest))
+		block := work.Block.WithMiningResult(nonce)
 		self.returnCh <- &Result{work, block}
 	} else {
 		self.returnCh <- nil

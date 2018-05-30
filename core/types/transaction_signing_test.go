@@ -6,8 +6,8 @@ import (
 
 	"bytes"
 
-	"github.com/ethereumproject/go-ethereum/common"
-	"github.com/ethereumproject/go-ethereum/crypto"
+	"github.com/webchain-network/webchaind/common"
+	"github.com/webchain-network/webchaind/crypto"
 )
 
 func TestChainId(t *testing.T) {

@@ -31,7 +31,7 @@
 
 [[constraint]]
   branch = "master"
-  name = "github.com/ethereumproject/ethash"
+  name = "github.com/webchain-network/cryptonight"
 
 [[constraint]]
   branch = "master"

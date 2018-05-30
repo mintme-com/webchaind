@@ -1,18 +1,19 @@
 // Copyright 2015 The go-ethereum Authors
-// This file is part of the go-ethereum library.
+// Copyright 2018 Webchain project
+// This file is part of Webchain.
 //
-// The go-ethereum library is free software: you can redistribute it and/or modify
+// Webchain is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Lesser General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
 //
-// The go-ethereum library is distributed in the hope that it will be useful,
+// Webchain is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 // GNU Lesser General Public License for more details.
 //
 // You should have received a copy of the GNU Lesser General Public License
-// along with the go-ethereum library. If not, see <http://www.gnu.org/licenses/>.
+// along with Webchain. If not, see <http://www.gnu.org/licenses/>.
 
 package console
 
@@ -27,9 +28,9 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/ethereumproject/go-ethereum/internal/jsre"
-	"github.com/ethereumproject/go-ethereum/internal/web3ext"
-	"github.com/ethereumproject/go-ethereum/rpc"
+	"github.com/webchain-network/webchaind/internal/jsre"
+	"github.com/webchain-network/webchaind/internal/web3ext"
+	"github.com/webchain-network/webchaind/rpc"
 	"github.com/fatih/color"
 	"github.com/peterh/liner"
 	"github.com/robertkrimen/otto"
@@ -131,7 +132,7 @@ func (c *Console) init(preload []string) error {
 	if err != nil {
 		return fmt.Errorf("api modules: %v", err)
 	}
-	flatten := "var eth = web3.eth; var personal = web3.personal; "
+	flatten := "var webchain = web3.webchain; var personal = web3.personal; "
 	for api := range apis {
 		if api == "web3" {
 			continue // manually mapped or ignore
@@ -241,15 +242,15 @@ func (c *Console) AutoCompleteInput(line string, pos int) (string, []string, str
 	return line[:start], c.jsre.CompleteKeywords(line[start:pos]), line[pos:]
 }
 
-// Welcome show summary of current Geth instance and some metadata about the
+// Welcome show summary of current webchaind instance and some metadata about the
 // console's available modules.
 func (c *Console) Welcome() {
-	// Print some generic Geth metadata
-	fmt.Fprintf(c.printer, "Welcome to the Geth JavaScript console!\n\n")
+	// Print some generic webchaind metadata
+	fmt.Fprintf(c.printer, "Welcome to the webchaind JavaScript console!\n\n")
 	c.jsre.Run(`
 		console.log("instance: " + web3.version.node);
-		console.log("coinbase: " + eth.coinbase);
-		console.log("at block: " + eth.blockNumber + " (" + new Date(1000 * eth.getBlock(eth.blockNumber).timestamp) + ")");
+		console.log("coinbase: " + webchain.coinbase);
+		console.log("at block: " + webchain.blockNumber + " (" + new Date(1000 * webchain.getBlock(webchain.blockNumber).timestamp) + ")");
 		console.log(" datadir: " + admin.datadir);
 	`)
 	// List all the supported modules for the user to call

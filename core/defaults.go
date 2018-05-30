@@ -1,7 +1,7 @@
 package core
 
 import (
-	"github.com/ethereumproject/go-ethereum/logger/glog"
+	"github.com/webchain-network/webchaind/logger/glog"
 )
 
 var (

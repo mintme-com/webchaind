@@ -9,8 +9,8 @@ import (
 
 	"path/filepath"
 
-	"github.com/ethereumproject/go-ethereum/core/types"
-	"github.com/ethereumproject/go-ethereum/ethdb"
+	"github.com/webchain-network/webchaind/core/types"
+	"github.com/webchain-network/webchaind/ethdb"
 )
 
 func TestConfigErrorProperties(t *testing.T) {
@@ -140,7 +140,6 @@ func TestMakeGenesisDump(t *testing.T) {
 		Difficulty: "0x0000000000000000000000000000000000000000000000000000000400000000",
 		ExtraData:  "0x11bbe8db4e347b4e8c937c1c8370e4b5ed33adb3db69cbdb7a38e1e50b1b82fa",
 		GasLimit:   "0x0000000000000000000000000000000000000000000000000000000000001388",
-		Mixhash:    "0x0000000000000000000000000000000000000000000000000000000000000000",
 		ParentHash: "0x0000000000000000000000000000000000000000000000000000000000000000",
 		Alloc: map[hex]*GenesisDumpAlloc{
 			"000d836201318ec6899a67540690382780743280": {Balance: "200000000000000000000"},
@@ -176,9 +175,6 @@ func TestMakeGenesisDump(t *testing.T) {
 	}
 	if gotGenesisDump.GasLimit != genesisDump.GasLimit {
 		t.Errorf("MakeGenesisDump failed to make equivalent genesis dump gaslimit: wanted: %v, got: %v", genesisDump.GasLimit, gotGenesisDump.GasLimit)
-	}
-	if gotGenesisDump.Mixhash != genesisDump.Mixhash {
-		t.Errorf("MakeGenesisDump failed to make equivalent genesis dump mixhash: wanted: %v, got: %v", genesisDump.Mixhash, gotGenesisDump.Mixhash)
 	}
 	if gotGenesisDump.ParentHash != genesisDump.ParentHash {
 		t.Errorf("MakeGenesisDump failed to make equivalent genesis dump parenthash: wanted: %v, got: %v", genesisDump.ParentHash, gotGenesisDump.ParentHash)
@@ -634,7 +630,7 @@ func makeOKSufficientChainConfig(dump *GenesisDump, config *ChainConfig) *Suffic
 	whole.Identity = "testID"
 	whole.Network = 3
 	whole.Name = "testable"
-	whole.Consensus = "ethash"
+	whole.Consensus = "cryptonight"
 	whole.Genesis = dump
 	whole.ChainConfig = config
 	whole.Bootstrap = []string{

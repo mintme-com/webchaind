@@ -4,11 +4,11 @@ import (
 	"math/big"
 	"strings"
 
-	"github.com/ethereumproject/go-ethereum/common"
-	"github.com/ethereumproject/go-ethereum/core/types"
-	"github.com/ethereumproject/go-ethereum/logger"
-	"github.com/ethereumproject/go-ethereum/logger/glog"
-	"github.com/ethereumproject/go-ethereum/rlp"
+	"github.com/webchain-network/webchaind/common"
+	"github.com/webchain-network/webchaind/core/types"
+	"github.com/webchain-network/webchaind/logger"
+	"github.com/webchain-network/webchaind/logger/glog"
+	"github.com/webchain-network/webchaind/rlp"
 )
 
 var mlogWwireProtocol = logger.MLogRegisterAvailable("wire", mlogLinesWire)

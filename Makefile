@@ -9,7 +9,7 @@ BINARY=bin
 BUILD_TIME=`date +%FT%T%z`
 COMMIT=`git log --pretty=format:'%h' -n 1`
 
-# Choose to install geth with or without SputnikVM.
+# Choose to install webchaind with or without SputnikVM.
 WITH_SVM?=1
 
 LDFLAGS=-ldflags "-X main.Version="`git describe --tags`
@@ -22,13 +22,13 @@ setup: ## Install all the build and lint dependencies
 	dep ensure
 	gometalinter --install
 
-build: cmd/abigen cmd/bootnode cmd/disasm cmd/ethtest cmd/evm cmd/gethrpctest cmd/rlpdump cmd/geth ## Build a local snapshot binary versions of all commands
+build: cmd/abigen cmd/bootnode cmd/disasm cmd/ethtest cmd/evm cmd/gethrpctest cmd/rlpdump cmd/webchaind ## Build a local snapshot binary versions of all commands
 	@ls -ld $(BINARY)/*
 
-cmd/geth: ## Build a local snapshot binary version of geth. Use WITH_SVM=0 to disable building with SputnikVM (default: WITH_SVM=1)
-	if [ ${WITH_SVM} == 1 ]; then ./scripts/build_sputnikvm.sh build ; else mkdir -p ./${BINARY} && go build ${LDFLAGS} -o ${BINARY}/geth ./cmd/geth ; fi
-	@echo "Done building geth."
-	@echo "Run \"$(BINARY)/geth\" to launch geth."
+cmd/webchaind: ## Build a local snapshot binary version of webchaind. Use WITH_SVM=0 to disable building with SputnikVM (default: WITH_SVM=1)
+	if [ ${WITH_SVM} == 1 ]; then ./scripts/build_sputnikvm.sh build ; else mkdir -p ./${BINARY} && go build ${LDFLAGS} -o ${BINARY}/webchaind ./cmd/webchaind ; fi
+	@echo "Done building webchaind."
+	@echo "Run \"$(BINARY)/webchaind\" to launch webchaind."
 
 cmd/abigen: ## Build a local snapshot binary version of abigen.
 	mkdir -p ./${BINARY} && go build ${LDFLAGS} -o ${BINARY}/abigen ./cmd/abigen
@@ -67,11 +67,11 @@ cmd/rlpdump: ## Build a local snapshot of rlpdump.
 
 install: ## Install all packages to $GOPATH/bin
 	go install ./cmd/{abigen,bootnode,disasm,ethtest,evm,gethrpctest,rlpdump}
-	$(MAKE) install_geth
+	$(MAKE) install_webchaind
 
-install_geth: ## Install geth to $GOPATH/bin. Use WITH_SVM=0 to disable building with SputnikVM (default: WITH_SVM=1)
-	$(info Installing $$GOPATH/bin/geth)
-	if [ ${WITH_SVM} == 1 ]; then ./scripts/build_sputnikvm.sh install ; else go install ${LDFLAGS} ./cmd/geth ; fi
+install_webchaind: ## Install webchaind to $GOPATH/bin. Use WITH_SVM=0 to disable building with SputnikVM (default: WITH_SVM=1)
+	$(info Installing $$GOPATH/bin/webchaind)
+	if [ ${WITH_SVM} == 1 ]; then ./scripts/build_sputnikvm.sh install ; else go install ${LDFLAGS} ./cmd/webchaind ; fi
 
 fmt: ## gofmt and goimports all go files
 	find . -name '*.go' -not -wholename './vendor/*' -not -wholename './_vendor*' | while read -r file; do gofmt -w -s "$$file"; goimports -w "$$file"; done
@@ -114,4 +114,4 @@ help:
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'
 
 
-.PHONY: setup test cover fmt lint ci build cmd/geth cmd/abigen cmd/bootnode cmd/disasm cmd/ethtest cmd/evm cmd/gethrlptest cmd/rlpdump install install_geth clean help static
+.PHONY: setup test cover fmt lint ci build cmd/webchaind cmd/abigen cmd/bootnode cmd/disasm cmd/ethtest cmd/evm cmd/gethrlptest cmd/rlpdump install install_webchaind clean help static

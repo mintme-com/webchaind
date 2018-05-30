@@ -1,18 +1,18 @@
 // Copyright 2015 The go-ethereum Authors
-// This file is part of go-ethereum.
+// This file is part of Webchain.
 //
-// go-ethereum is free software: you can redistribute it and/or modify
+// Webchain is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
 //
-// go-ethereum is distributed in the hope that it will be useful,
+// Webchain is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 // GNU General Public License for more details.
 //
 // You should have received a copy of the GNU General Public License
-// along with go-ethereum. If not, see <http://www.gnu.org/licenses/>.
+// along with Webchain. If not, see <http://www.gnu.org/licenses/>.
 
 // gethrpctest is a command to run the external RPC tests.
 package main
@@ -27,16 +27,16 @@ import (
 
 	"path/filepath"
 
-	"github.com/ethereumproject/go-ethereum/accounts"
-	"github.com/ethereumproject/go-ethereum/common"
-	"github.com/ethereumproject/go-ethereum/core"
-	"github.com/ethereumproject/go-ethereum/crypto"
-	"github.com/ethereumproject/go-ethereum/eth"
-	"github.com/ethereumproject/go-ethereum/ethdb"
-	"github.com/ethereumproject/go-ethereum/logger/glog"
-	"github.com/ethereumproject/go-ethereum/node"
-	"github.com/ethereumproject/go-ethereum/tests"
-	"github.com/ethereumproject/go-ethereum/whisper"
+	"github.com/webchain-network/webchaind/accounts"
+	"github.com/webchain-network/webchaind/common"
+	"github.com/webchain-network/webchaind/core"
+	"github.com/webchain-network/webchaind/crypto"
+	"github.com/webchain-network/webchaind/eth"
+	"github.com/webchain-network/webchaind/ethdb"
+	"github.com/webchain-network/webchaind/logger/glog"
+	"github.com/webchain-network/webchaind/node"
+	"github.com/webchain-network/webchaind/tests"
+	"github.com/webchain-network/webchaind/whisper"
 )
 
 // Version is the application revision identifier. It can be set with the linker

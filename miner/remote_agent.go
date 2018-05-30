@@ -1,32 +1,34 @@
 // Copyright 2015 The go-ethereum Authors
-// This file is part of the go-ethereum library.
+// Copyright 2018 Webchain project
+// This file is part of Webchain.
 //
-// The go-ethereum library is free software: you can redistribute it and/or modify
+// Webchain is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Lesser General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
 //
-// The go-ethereum library is distributed in the hope that it will be useful,
+// Webchain is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 // GNU Lesser General Public License for more details.
 //
 // You should have received a copy of the GNU Lesser General Public License
-// along with the go-ethereum library. If not, see <http://www.gnu.org/licenses/>.
+// along with Webchain. If not, see <http://www.gnu.org/licenses/>.
 
 package miner
 
 import (
+	"encoding/hex"
 	"errors"
 	"math/big"
 	"sync"
 	"sync/atomic"
 	"time"
 
-	"github.com/ethereumproject/ethash"
-	"github.com/ethereumproject/go-ethereum/common"
-	"github.com/ethereumproject/go-ethereum/logger"
-	"github.com/ethereumproject/go-ethereum/logger/glog"
+	"github.com/webchain-network/webchaind/common"
+	"github.com/webchain-network/webchaind/core/types"
+	"github.com/webchain-network/webchaind/logger"
+	"github.com/webchain-network/webchaind/logger/glog"
 )
 
 type hashrate struct {
@@ -113,8 +115,7 @@ func (a *RemoteAgent) GetWork() ([3]string, error) {
 		block := a.currentWork.Block
 
 		res[0] = block.HashNoNonce().Hex()
-		seedHash, _ := ethash.GetSeedHash(block.NumberU64())
-		res[1] = common.BytesToHash(seedHash).Hex()
+		res[1] = hex.EncodeToString(types.HeaderToBytes(block.Header())) // TODO
 		// Calculate the "target" to be returned to the external miner
 		n := big.NewInt(1)
 		n.Lsh(n, 255)
@@ -129,14 +130,13 @@ func (a *RemoteAgent) GetWork() ([3]string, error) {
 }
 
 // Returns true or false, but does not indicate if the PoW was correct
-func (a *RemoteAgent) SubmitWork(nonce uint64, mixDigest, hash common.Hash) (exists bool) {
+func (a *RemoteAgent) SubmitWork(nonce uint64, hash common.Hash) (exists bool) {
 	a.mu.Lock()
 	defer a.mu.Unlock()
 	defer func() {
 		if logger.MlogEnabled() {
 			mlogMinerSubmitWork.AssignDetails(
 				nonce,
-				mixDigest.Hex(),
 				hash.Hex(),
 				exists,
 			).Send(mlogMiner)
@@ -145,7 +145,7 @@ func (a *RemoteAgent) SubmitWork(nonce uint64, mixDigest, hash common.Hash) (exi
 
 	// Make sure the work submitted is present
 	if a.work[hash] != nil {
-		block := a.work[hash].Block.WithMiningResult(nonce, mixDigest)
+		block := a.work[hash].Block.WithMiningResult(nonce)
 		a.returnCh <- &Result{a.work[hash], block}
 
 		delete(a.work, hash)

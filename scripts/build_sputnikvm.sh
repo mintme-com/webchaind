@@ -8,7 +8,7 @@ if [ ! "$OUTPUT" == "build" ] && [ ! "$OUTPUT" == "install" ]; then
 	echo "Specify 'install' or 'build' as first argument."
 	exit 1
 else
-	echo "With SputnikVM, running geth $OUTPUT ..."
+	echo "With SputnikVM, running webchaind $OUTPUT ..."
 fi
 
 OS='Unknown OS'
@@ -48,14 +48,14 @@ if [ "$OS" == "Windows" ]; then
     copy %GOPATH%\src\github.com\ethereumproject\sputnikvm-ffi\c\ffi\target\release\sputnikvm.lib \
         %GOPATH%\src\github.com\ethereumproject\sputnikvm-ffi\c\sputnikvm.lib
 
-    cd %GOPATH%\src\github.com\ethereumproject\go-ethereum\cmd\geth
+    cd %GOPATH%\src\github.com\webchain-network\webchaind\cmd\webchaind
     set CGO_LDFLAGS=-Wl,--allow-multiple-definition \
         %GOPATH%\src\github.com\ethereumproject\sputnikvm-ffi\c\sputnikvm.lib -lws2_32 -luserenv
 	if [ "$OUTPUT" == "install" ]; then
 		go install -ldflags '-X main.Version='$(git describe --tags) -tags=sputnikvm .
 	elif [ "$OUTPUT" == "build" ]; then
 		mkdir -p %GOPATH%\src\github.com\ethereumproject\go-ethereum\bin
-		go build -ldflags '-X main.Version='$(git describe --tags) -o %GOPATH%\src\github.com\ethereumproject\go-ethereum\bin\geth -tags=sputnikvm .
+		go build -ldflags '-X main.Version='$(git describe --tags) -o %GOPATH%\src\github.com\webchain-network\webchaind\cmd\webchaind -tags=sputnikvm .
 	fi
 else
     ep_gopath=$GOPATH/src/github.com/ethereumproject
@@ -85,23 +85,22 @@ else
     cp $sputnikffi_path/c/ffi/target/release/libsputnikvm_ffi.a \
         $sputnikffi_path/c/libsputnikvm.a
 
-	geth_binpath="$ep_gopath/go-ethereum/bin"
-	echo "Doing geth $OUTPUT ..."
-	cd "$ep_gopath/go-ethereum"
+	webchaind_binpath="$ep_gopath/webchaind/bin"
+	echo "Doing webchaind $OUTPUT ..."
+	cd "$ep_gopath/webchaind"
     if [ "$OS" == "Linux" ]; then
 		if [ "$OUTPUT" == "install" ]; then
-			CGO_LDFLAGS="$sputnikffi_path/c/libsputnikvm.a -ldl" go install -ldflags '-X main.Version='$(git describe --tags) ./cmd/geth
+			CGO_LDFLAGS="$sputnikffi_path/c/libsputnikvm.a -ldl" go install -ldflags '-X main.Version='$(git describe --tags) ./cmd/webchaind
 		elif [ "$OUTPUT" == "build" ]; then
-			mkdir -p "$geth_binpath"
-			CGO_LDFLAGS="$sputnikffi_path/c/libsputnikvm.a -ldl" go build -ldflags '-X main.Version='$(git describe --tags) -o $geth_binpath/geth -tags=sputnikvm ./cmd/geth
+			mkdir -p "$webchaind_binpath"
+			CGO_LDFLAGS="$sputnikffi_path/c/libsputnikvm.a -ldl" go build -ldflags '-X main.Version='$(git describe --tags) -o $webchaind_binpath/webchaind -tags=sputnikvm ./cmd/webchaind
 		fi
     else
 		if [ "$OUTPUT" == "install" ]; then
-			CGO_LDFLAGS="$sputnikffi_path/c/libsputnikvm.a -ldl -lresolv" go install -ldflags '-X main.Version='$(git describe --tags) -tags=sputnikvm ./cmd/geth
+			CGO_LDFLAGS="$sputnikffi_path/c/libsputnikvm.a -ldl -lresolv" go install -ldflags '-X main.Version='$(git describe --tags) -tags=sputnikvm ./cmd/webchaind
 		elif [ "$OUTPUT" == "build" ]; then
-			mkdir -p "$geth_binpath"
-			CGO_LDFLAGS="$sputnikffi_path/c/libsputnikvm.a -ldl -lresolv" go build -ldflags '-X main.Version='$(git describe --tags) -o $geth_binpath/geth -tags=sputnikvm ./cmd/geth
+			mkdir -p "$webchaind_binpath"
+			CGO_LDFLAGS="$sputnikffi_path/c/libsputnikvm.a -ldl -lresolv" go build -ldflags '-X main.Version='$(git describe --tags) -o $webchaind_binpath/webchaind -tags=sputnikvm ./cmd/webchaind
 		fi
     fi
 fi
-

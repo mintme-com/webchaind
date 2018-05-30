@@ -1,18 +1,19 @@
 // Copyright 2014 The go-ethereum Authors
-// This file is part of the go-ethereum library.
+// Copyright 2018 Webchain project
+// This file is part of Webchain.
 //
-// The go-ethereum library is free software: you can redistribute it and/or modify
+// Webchain is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Lesser General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
 //
-// The go-ethereum library is distributed in the hope that it will be useful,
+// Webchain is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 // GNU Lesser General Public License for more details.
 //
 // You should have received a copy of the GNU Lesser General Public License
-// along with the go-ethereum library. If not, see <http://www.gnu.org/licenses/>.
+// along with Webchain. If not, see <http://www.gnu.org/licenses/>.
 
 // Package types contains data types related to Ethereum consensus.
 package types
@@ -28,9 +29,9 @@ import (
 	"sync/atomic"
 	"time"
 
-	"github.com/ethereumproject/go-ethereum/common"
-	"github.com/ethereumproject/go-ethereum/crypto/sha3"
-	"github.com/ethereumproject/go-ethereum/rlp"
+	"github.com/webchain-network/webchaind/common"
+	"github.com/webchain-network/webchaind/crypto/sha3"
+	"github.com/webchain-network/webchaind/rlp"
 )
 
 // HeaderExtraMax is the byte size limit for Header.Extra.
@@ -69,7 +70,6 @@ type Header struct {
 	GasUsed     *big.Int       // Gas used
 	Time        *big.Int       // Creation time
 	Extra       []byte         // Freeform descriptor
-	MixDigest   common.Hash    // for quick difficulty verification
 	Nonce       BlockNonce
 }
 
@@ -124,6 +124,12 @@ func rlpHash(x interface{}) (h common.Hash) {
 	rlp.Encode(hw, x)
 	hw.Sum(h[:0])
 	return h
+}
+
+func HeaderToBytes(header *Header) []byte {
+	buf := new(bytes.Buffer)
+	rlp.Encode(buf, header)
+	return buf.Bytes()
 }
 
 // Body is a simple (mutable, non-safe) data container for storing and moving
@@ -324,7 +330,6 @@ func (b *Block) Difficulty() *big.Int { return new(big.Int).Set(b.header.Difficu
 func (b *Block) Time() *big.Int       { return new(big.Int).Set(b.header.Time) }
 
 func (b *Block) NumberU64() uint64        { return b.header.Number.Uint64() }
-func (b *Block) MixDigest() common.Hash   { return b.header.MixDigest }
 func (b *Block) Nonce() uint64            { return binary.BigEndian.Uint64(b.header.Nonce[:]) }
 func (b *Block) Bloom() Bloom             { return b.header.Bloom }
 func (b *Block) Coinbase() common.Address { return b.header.Coinbase }
@@ -366,11 +371,10 @@ func CalcUncleHash(uncles []*Header) common.Hash {
 }
 
 // WithMiningResult returns a new block with the data from b
-// where nonce and mix digest are set to the provided values.
-func (b *Block) WithMiningResult(nonce uint64, mixDigest common.Hash) *Block {
+// where nonce is set to the provided value.
+func (b *Block) WithMiningResult(nonce uint64) *Block {
 	cpy := *b.header
 	binary.BigEndian.PutUint64(cpy.Nonce[:], nonce)
-	cpy.MixDigest = mixDigest
 	return &Block{
 		header:       &cpy,
 		transactions: b.transactions,
@@ -432,9 +436,8 @@ func (h *Header) String() string {
 	GasUsed:	    %v
 	Time:		    %v
 	Extra:		    %s
-	MixDigest:      %x
 	Nonce:		    %x
-]`, h.Hash(), h.ParentHash, h.UncleHash, h.Coinbase, h.Root, h.TxHash, h.ReceiptHash, h.Bloom, h.Difficulty, h.Number, h.GasLimit, h.GasUsed, h.Time, h.Extra, h.MixDigest, h.Nonce)
+]`, h.Hash(), h.ParentHash, h.UncleHash, h.Coinbase, h.Root, h.TxHash, h.ReceiptHash, h.Bloom, h.Difficulty, h.Number, h.GasLimit, h.GasUsed, h.Time, h.Extra, h.Nonce)
 }
 
 type Blocks []*Block

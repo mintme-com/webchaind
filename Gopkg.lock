@@ -51,12 +51,6 @@
 
 [[projects]]
   branch = "master"
-  name = "github.com/ethereumproject/ethash"
-  packages = ["."]
-  revision = "65a5b25efc277ff0996160cc3c76a44bec7a11fb"
-
-[[projects]]
-  branch = "master"
   name = "github.com/ethereumproject/sputnikvm-ffi"
   packages = ["go/sputnikvm"]
   revision = "68bcac0a08ca8ed7d8f2ace4b4aca72176544770"
@@ -226,6 +220,12 @@
 
 [[projects]]
   branch = "master"
+  name = "github.com/webchain-network/cryptonight"
+  packages = ["."]
+  revision = "47af4e71f2c6d62a650f1b7d4029a8071d89cfa5"
+
+[[projects]]
+  branch = "master"
   name = "golang.org/x/crypto"
   packages = [
     "pbkdf2",
@@ -323,6 +323,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "2a159657f64d076ce0a2e9a184eda92d100ca9b1fa9dda0c003bdbd6079e3b26"
+  inputs-digest = "f576bdd7bb201e8b78a4d91323377ad0cffbacf47b2dc0eba8624114e3da65b6"
   solver-name = "gps-cdcl"
   solver-version = 1

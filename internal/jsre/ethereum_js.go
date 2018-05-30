@@ -1,18 +1,19 @@
 // Copyright 2015 The go-ethereum Authors
-// This file is part of the go-ethereum library.
+// Copyright 2018 Webchain project
+// This file is part of Webchain.
 //
-// The go-ethereum library is free software: you can redistribute it and/or modify
+// Webchain is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Lesser General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
 //
-// The go-ethereum library is distributed in the hope that it will be useful,
+// Webchain is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 // GNU Lesser General Public License for more details.
 //
 // You should have received a copy of the GNU Lesser General Public License
-// along with the go-ethereum library. If not, see <http://www.gnu.org/licenses/>.
+// along with Webchain. If not, see <http://www.gnu.org/licenses/>.
 
 package jsre
 
@@ -2543,7 +2544,7 @@ var IpcProvider = require('./web3/ipcprovider');
 function Web3 (provider) {
     this._requestManager = new RequestManager(provider);
     this.currentProvider = provider;
-    this.eth = new Eth(this);
+    this.webchain = new Eth(this);
     this.db = new DB(this);
     this.shh = new Shh(this);
     this.net = new Net(this);
@@ -2965,7 +2966,7 @@ var checkForContractAddress = function(contract, callback){
  * @param {Array} abi
  */
 var ContractFactory = function (eth, abi) {
-    this.eth = eth;
+    this.webchain = eth;
     this.abi = abi;
 
     /**
@@ -2979,7 +2980,7 @@ var ContractFactory = function (eth, abi) {
      * @returns {Contract} returns contract instance
      */
     this.new = function () {
-        var contract = new Contract(this.eth, this.abi);
+        var contract = new Contract(this.webchain, this.abi);
 
         // parse arguments
         var options = {}; // required!
@@ -3001,7 +3002,7 @@ var ContractFactory = function (eth, abi) {
         if (callback) {
 
             // wait for the contract address adn check if the code was deployed
-            this.eth.sendTransaction(options, function (err, hash) {
+            this.webchain.sendTransaction(options, function (err, hash) {
                 if (err) {
                     callback(err);
                 } else {
@@ -3015,7 +3016,7 @@ var ContractFactory = function (eth, abi) {
                 }
             });
         } else {
-            var hash = this.eth.sendTransaction(options);
+            var hash = this.webchain.sendTransaction(options);
             // add the transaction hash
             contract.transactionHash = hash;
             checkForContractAddress(contract);
@@ -3050,7 +3051,7 @@ var ContractFactory = function (eth, abi) {
  * otherwise calls callback function (err, contract)
  */
 ContractFactory.prototype.at = function (address, callback) {
-    var contract = new Contract(this.eth, this.abi, address);
+    var contract = new Contract(this.webchain, this.abi, address);
 
     // this functions are not part of prototype,
     // because we dont want to spoil the interface
@@ -5402,7 +5403,7 @@ var methods = function () {
     var submitWork = new Method({
         name: 'submitWork',
         call: 'eth_submitWork',
-        params: 3
+        params: 2
     });
 
     var getWork = new Method({
@@ -5631,7 +5632,7 @@ var methods = function () {
     return [
         newAccount,
         unlockAccount,
-        lockAccount,        
+        lockAccount,
         sign
     ];
 };
@@ -5762,7 +5763,7 @@ module.exports = Shh;
 var Method = require('../method');
 
 /// @returns an array of objects describing web3.eth.filter api methods
-var eth = function () {
+var webchain = function () {
     var newFilterCall = function (args) {
         var type = args[0];
 
@@ -5847,7 +5848,7 @@ var shh = function () {
 };
 
 module.exports = {
-    eth: eth,
+    webchain: webchain,
     shh: shh
 };
 

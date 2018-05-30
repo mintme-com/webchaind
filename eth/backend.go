@@ -1,18 +1,19 @@
 // Copyright 2014 The go-ethereum Authors
-// This file is part of the go-ethereum library.
+// Copyright 2018 Webchain project
+// This file is part of Webchain.
 //
-// The go-ethereum library is free software: you can redistribute it and/or modify
+// Webchain is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Lesser General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
 //
-// The go-ethereum library is distributed in the hope that it will be useful,
+// Webchain is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 // GNU Lesser General Public License for more details.
 //
 // You should have received a copy of the GNU Lesser General Public License
-// along with the go-ethereum library. If not, see <http://www.gnu.org/licenses/>.
+// along with Webchain. If not, see <http://www.gnu.org/licenses/>.
 
 // Package eth implements the Ethereum protocol.
 package eth
@@ -22,39 +23,33 @@ import (
 	"errors"
 	"fmt"
 	"math/big"
-	"os"
-	"path/filepath"
 	"strconv"
 	"sync"
 	"time"
 
-	"github.com/ethereumproject/ethash"
-	"github.com/ethereumproject/go-ethereum/accounts"
-	"github.com/ethereumproject/go-ethereum/common"
-	"github.com/ethereumproject/go-ethereum/common/compiler"
-	"github.com/ethereumproject/go-ethereum/common/httpclient"
-	"github.com/ethereumproject/go-ethereum/common/registrar/ethreg"
-	"github.com/ethereumproject/go-ethereum/core"
-	"github.com/ethereumproject/go-ethereum/core/types"
-	"github.com/ethereumproject/go-ethereum/eth/downloader"
-	"github.com/ethereumproject/go-ethereum/eth/filters"
-	"github.com/ethereumproject/go-ethereum/ethdb"
-	"github.com/ethereumproject/go-ethereum/event"
-	"github.com/ethereumproject/go-ethereum/logger"
-	"github.com/ethereumproject/go-ethereum/logger/glog"
-	"github.com/ethereumproject/go-ethereum/miner"
-	"github.com/ethereumproject/go-ethereum/node"
-	"github.com/ethereumproject/go-ethereum/p2p"
-	"github.com/ethereumproject/go-ethereum/rlp"
-	"github.com/ethereumproject/go-ethereum/rpc"
+	"github.com/webchain-network/cryptonight"
+	"github.com/webchain-network/webchaind/accounts"
+	"github.com/webchain-network/webchaind/common"
+	"github.com/webchain-network/webchaind/common/compiler"
+	"github.com/webchain-network/webchaind/common/httpclient"
+	"github.com/webchain-network/webchaind/common/registrar/ethreg"
+	"github.com/webchain-network/webchaind/core"
+	"github.com/webchain-network/webchaind/core/types"
+	"github.com/webchain-network/webchaind/eth/downloader"
+	"github.com/webchain-network/webchaind/eth/filters"
+	"github.com/webchain-network/webchaind/ethdb"
+	"github.com/webchain-network/webchaind/event"
+	"github.com/webchain-network/webchaind/logger"
+	"github.com/webchain-network/webchaind/logger/glog"
+	"github.com/webchain-network/webchaind/miner"
+	"github.com/webchain-network/webchaind/node"
+	"github.com/webchain-network/webchaind/p2p"
+	"github.com/webchain-network/webchaind/rlp"
+	"github.com/webchain-network/webchaind/rpc"
 )
 
 const (
-	epochLength    = 30000
-	ethashRevision = 23
-
-	autoDAGcheckInterval = 10 * time.Hour
-	autoDAGepochHeight   = epochLength / 2
+	cryptonightRevision = 1
 )
 
 type Config struct {
@@ -71,7 +66,6 @@ type Config struct {
 
 	NatSpec   bool
 	DocRoot   string
-	AutoDAG   bool
 	PowTest   bool
 	PowShared bool
 
@@ -106,7 +100,7 @@ type Ethereum struct {
 	txMu            sync.Mutex
 	blockchain      *core.BlockChain
 	accountManager  *accounts.Manager
-	pow             *ethash.Ethash
+	pow             *cryptonight.Cryptonight
 	protocolManager *ProtocolManager
 	SolcPath        string
 	solc            *compiler.Solidity
@@ -127,9 +121,7 @@ type Ethereum struct {
 	Mining        bool
 	MinerThreads  int
 	NatSpec       bool
-	AutoDAG       bool
 	PowTest       bool
-	autodagquit   chan bool
 	etherbase     common.Address
 	netVersionId  int
 	netRPCService *PublicNetAPI
@@ -184,7 +176,7 @@ func New(ctx *node.ServiceContext, config *Config) (*Ethereum, error) {
 	if !config.SkipBcVersionCheck {
 		bcVersion := core.GetBlockChainVersion(chainDb)
 		if bcVersion != config.BlockChainVersion && bcVersion != 0 {
-			return nil, fmt.Errorf("Blockchain DB version mismatch (%d / %d). Run geth upgradedb.\n", bcVersion, config.BlockChainVersion)
+			return nil, fmt.Errorf("Blockchain DB version mismatch (%d / %d). Run webchaind upgradedb.\n", bcVersion, config.BlockChainVersion)
 		}
 		core.WriteBlockChainVersion(chainDb, config.BlockChainVersion)
 	}
@@ -201,7 +193,6 @@ func New(ctx *node.ServiceContext, config *Config) (*Ethereum, error) {
 		NatSpec:                 config.NatSpec,
 		MinerThreads:            config.MinerThreads,
 		SolcPath:                config.SolcPath,
-		AutoDAG:                 config.AutoDAG,
 		PowTest:                 config.PowTest,
 		GpoMinGasPrice:          config.GpoMinGasPrice,
 		GpoMaxGasPrice:          config.GpoMaxGasPrice,
@@ -213,17 +204,17 @@ func New(ctx *node.ServiceContext, config *Config) (*Ethereum, error) {
 	}
 	switch {
 	case config.PowTest:
-		glog.V(logger.Info).Infof("Consensus: ethash used in test mode")
-		eth.pow, err = ethash.NewForTesting()
+		glog.V(logger.Info).Infof("Consensus: cryptonight used in test mode")
+		eth.pow, err = cryptonight.NewForTesting()
 		if err != nil {
 			return nil, err
 		}
 	case config.PowShared:
-		glog.V(logger.Info).Infof("Consensus: ethash used in shared mode")
-		eth.pow = ethash.NewShared()
+		glog.V(logger.Info).Infof("Consensus: cryptonight used in shared mode")
+		eth.pow = cryptonight.NewShared()
 
 	default:
-		eth.pow = ethash.New()
+		eth.pow = cryptonight.New()
 	}
 
 	// load the genesis block or write a new one if no genesis
@@ -402,9 +393,6 @@ func (s *Ethereum) Protocols() []p2p.Protocol {
 // Start implements node.Service, starting all internal goroutines needed by the
 // Ethereum protocol implementation.
 func (s *Ethereum) Start(srvr *p2p.Server) error {
-	if s.AutoDAG {
-		s.StartAutoDAG()
-	}
 	s.protocolManager.Start()
 	s.netRPCService = NewPublicNetAPI(srvr, s.NetVersion())
 	return nil
@@ -419,8 +407,6 @@ func (s *Ethereum) Stop() error {
 	s.miner.Stop()
 	s.eventMux.Stop()
 
-	s.StopAutoDAG()
-
 	s.chainDb.Close()
 	s.dappDb.Close()
 	close(s.shutdownChan)
@@ -431,69 +417,6 @@ func (s *Ethereum) Stop() error {
 // This function will wait for a shutdown and resumes main thread execution
 func (s *Ethereum) WaitForShutdown() {
 	<-s.shutdownChan
-}
-
-// StartAutoDAG() spawns a go routine that checks the DAG every autoDAGcheckInterval
-// by default that is 10 times per epoch
-// in epoch n, if we past autoDAGepochHeight within-epoch blocks,
-// it calls ethash.MakeDAG  to pregenerate the DAG for the next epoch n+1
-// if it does not exist yet as well as remove the DAG for epoch n-1
-// the loop quits if autodagquit channel is closed, it can safely restart and
-// stop any number of times.
-// For any more sophisticated pattern of DAG generation, use CLI subcommand
-// makedag
-func (self *Ethereum) StartAutoDAG() {
-	if self.autodagquit != nil {
-		return // already started
-	}
-	go func() {
-		glog.V(logger.Info).Infof("Automatic pregeneration of ethash DAG ON (ethash dir: %s)", ethash.DefaultDir)
-		var nextEpoch uint64
-		timer := time.After(0)
-		self.autodagquit = make(chan bool)
-		for {
-			select {
-			case <-timer:
-				glog.V(logger.Info).Infof("checking DAG (ethash dir: %s)", ethash.DefaultDir)
-				currentBlock := self.BlockChain().CurrentBlock().NumberU64()
-				thisEpoch := currentBlock / epochLength
-				if nextEpoch <= thisEpoch {
-					if currentBlock%epochLength > autoDAGepochHeight {
-						if thisEpoch > 0 {
-							previousDag, previousDagFull := dagFiles(thisEpoch - 1)
-							os.Remove(filepath.Join(ethash.DefaultDir, previousDag))
-							os.Remove(filepath.Join(ethash.DefaultDir, previousDagFull))
-							glog.V(logger.Info).Infof("removed DAG for epoch %d (%s)", thisEpoch-1, previousDag)
-						}
-						nextEpoch = thisEpoch + 1
-						dag, _ := dagFiles(nextEpoch)
-						if _, err := os.Stat(dag); os.IsNotExist(err) {
-							glog.V(logger.Info).Infof("Pregenerating DAG for epoch %d (%s)", nextEpoch, dag)
-							err := ethash.MakeDAG(nextEpoch*epochLength, "") // "" -> ethash.DefaultDir
-							if err != nil {
-								glog.V(logger.Error).Infof("Error generating DAG for epoch %d (%s)", nextEpoch, dag)
-								return
-							}
-						} else {
-							glog.V(logger.Error).Infof("DAG for epoch %d (%s)", nextEpoch, dag)
-						}
-					}
-				}
-				timer = time.After(autoDAGcheckInterval)
-			case <-self.autodagquit:
-				return
-			}
-		}
-	}()
-}
-
-// stopAutoDAG stops automatic DAG pregeneration by quitting the loop
-func (self *Ethereum) StopAutoDAG() {
-	if self.autodagquit != nil {
-		close(self.autodagquit)
-		self.autodagquit = nil
-	}
-	glog.V(logger.Info).Infof("Automatic pregeneration of ethash DAG: OFF (ethash dir: %s)", ethash.DefaultDir)
 }
 
 // HTTPClient returns the light http client used for fetching offchain docs
@@ -515,14 +438,6 @@ func (self *Ethereum) SetSolc(solcPath string) (*compiler.Solidity, error) {
 	self.SolcPath = solcPath
 	self.solc = nil
 	return self.Solc()
-}
-
-// dagFiles(epoch) returns the two alternative DAG filenames (not a path)
-// 1) <revision>-<hex(seedhash[8])> 2) full-R<revision>-<hex(seedhash[8])>
-func dagFiles(epoch uint64) (string, string) {
-	seedHash, _ := ethash.GetSeedHash(epoch * epochLength)
-	dag := fmt.Sprintf("full-R%d-%x", ethashRevision, seedHash[:8])
-	return dag, "full-R" + dag
 }
 
 // upgradeChainDatabase ensures that the chain database stores block split into
