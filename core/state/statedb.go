@@ -24,12 +24,12 @@ import (
 	"sync"
 
 	"github.com/webchain-network/webchaind/common"
+	"github.com/webchain-network/webchaind/core/vm"
 	"github.com/webchain-network/webchaind/crypto"
 	"github.com/webchain-network/webchaind/logger"
 	"github.com/webchain-network/webchaind/logger/glog"
 	"github.com/webchain-network/webchaind/rlp"
 	"github.com/webchain-network/webchaind/trie"
-	"github.com/webchain-network/webchaind/core/vm"
 )
 
 // The starting nonce determines the default nonce when new accounts are being
@@ -62,9 +62,9 @@ type revision struct {
 // * Contracts
 // * Accounts
 type StateDB struct {
-	db            Database
-	trie          Trie
-	pastTries     []*trie.SecureTrie
+	db        Database
+	trie      Trie
+	pastTries []*trie.SecureTrie
 
 	// DB error.
 	// State objects are used by the consensus core and VM which are
@@ -616,4 +616,3 @@ func (db *StateDB) ForEachStorage(addr common.Address, cb func(key, value common
 		}
 	}
 }
-

@@ -28,6 +28,7 @@ var Modules = map[string]string{
 	"rpc":      RPC_JS,
 	"shh":      Shh_JS,
 	"txpool":   TxPool_JS,
+	"geth":     Geth_JS,
 }
 
 const Admin_JS = `
@@ -147,6 +148,39 @@ web3._extend({
 			getter: 'admin_datadir'
 		})
 	]
+});
+`
+
+const Geth_JS = `
+web3._extend({
+	property: 'geth',
+	methods:
+	[
+		new web3._extend.Method({
+			name: 'getAddressTransactions',
+			call: 'geth_getAddressTransactions',
+			params: 8,
+			inputFormatter: [web3._extend.formatters.inputAddressFormatter, null, web3._extend.formatters.inputDefaultBlockNumberFormatter, null, null, null, null, null]
+		}),
+		new web3._extend.Method({
+			name: 'getTransactionsByAddress',
+			call: 'geth_getTransactionsByAddress',
+			params: 8,
+			inputFormatter: [web3._extend.formatters.inputAddressFormatter, null, web3._extend.formatters.inputDefaultBlockNumberFormatter, null, null, null, null, null]
+		}),
+		new web3._extend.Method({
+			name: 'buildATXI',
+			call: 'geth_buildATXI',
+			params: 3,
+			inputFormatter: [web3._extend.formatters.inputDefaultBlockNumberFormatter, web3._extend.formatters.inputDefaultBlockNumberFormatter, null]
+		}),
+		new web3._extend.Method({
+			name: 'getATXIBuildStatus',
+			call: 'geth_getATXIBuildStatus',
+			params: 0,
+		})
+	],
+	properties: []
 });
 `
 
@@ -339,6 +373,12 @@ web3._extend({
 			call: 'personal_sendTransaction',
 			params: 2,
 			inputFormatter: [web3._extend.formatters.inputTransactionFormatter, null]
+		}),
+		new web3._extend.Method({
+			name: 'ecRecover',
+			call: 'personal_ecRecover',
+			params: 2,
+			inputFormatter: [null, null]
 		})
 	]
 });

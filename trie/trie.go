@@ -23,8 +23,8 @@ import (
 
 	"github.com/webchain-network/webchaind/common"
 	"github.com/webchain-network/webchaind/crypto/sha3"
-	"github.com/rcrowley/go-metrics"
 	"github.com/webchain-network/webchaind/logger/glog"
+	"github.com/rcrowley/go-metrics"
 )
 
 var (

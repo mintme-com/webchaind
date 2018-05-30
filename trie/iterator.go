@@ -24,7 +24,6 @@ import (
 	"github.com/webchain-network/webchaind/common"
 )
 
-
 // Iterator is a key-value trie iterator that traverses a Trie.
 type Iterator struct {
 	nodeIt NodeIterator

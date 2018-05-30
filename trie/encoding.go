@@ -15,6 +15,7 @@
 // along with Webchain. If not, see <http://www.gnu.org/licenses/>.
 
 package trie
+
 // Trie keys are dealt with in three distinct encodings:
 //
 // KEYBYTES encoding contains the actual key and nothing else. This encoding is the

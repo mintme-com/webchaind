@@ -44,6 +44,7 @@ import (
 	"github.com/webchain-network/webchaind/pow"
 	"github.com/webchain-network/webchaind/rlp"
 	"gopkg.in/urfave/cli.v1"
+	"math"
 )
 
 const (
@@ -81,7 +82,7 @@ func StartNode(stack *node.Node) {
 
 	// mlog
 	nodeInfo := stack.Server().NodeInfo()
-	cconf := cacheChainConfig
+	cconf := core.GetCacheChainConfig()
 	if cconf == nil {
 		Fatalf("Nil chain configuration")
 	}
@@ -634,7 +635,7 @@ func rollback(ctx *cli.Context) error {
 func dumpChainConfig(ctx *cli.Context) error {
 
 	chainIdentity := mustMakeChainIdentity(ctx)
-	if !(chainIdentitiesMain[chainIdentity] || chainIdentitiesMorden[chainIdentity]) {
+	if !(core.ChainIdentitiesMain[chainIdentity] || core.ChainIdentitiesMorden[chainIdentity]) {
 		glog.Fatal("Dump config should only be used with default chain configurations (mainnet or morden).")
 	}
 
@@ -716,11 +717,20 @@ func startNode(ctx *cli.Context, stack *node.Node) *eth.Ethereum {
 	}
 
 	// Start auxiliary services if enabled
+	if ctx.GlobalBool(aliasableName(AddrTxIndexFlag.Name, ctx)) && ctx.GlobalBool(aliasableName(AddrTxIndexAutoBuildFlag.Name, ctx)) {
+		a := ethereum.BlockChain().GetAtxi()
+		if a == nil {
+			panic("somehow atxi did not get enabled in backend setup. this is not expected")
+		}
+		a.AutoMode = true
+		go core.BuildAddrTxIndex(ethereum.BlockChain(), ethereum.ChainDb(), a.Db, math.MaxUint64, math.MaxUint64, 10000)
+	}
 	if ctx.GlobalBool(aliasableName(MiningEnabledFlag.Name, ctx)) {
 		if err := ethereum.StartMining(ctx.GlobalInt(aliasableName(MinerThreadsFlag.Name, ctx)), ctx.GlobalString(aliasableName(MiningGPUFlag.Name, ctx))); err != nil {
 			glog.Fatalf("Failed to start mining: %v", err)
 		}
 	}
+
 	return ethereum
 }
 

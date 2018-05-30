@@ -20,14 +20,13 @@ import (
 	"bytes"
 	"encoding/binary"
 	"fmt"
-	"math/big"
-
 	"github.com/webchain-network/webchaind/common"
 	"github.com/webchain-network/webchaind/core/types"
 	"github.com/webchain-network/webchaind/ethdb"
 	"github.com/webchain-network/webchaind/logger"
 	"github.com/webchain-network/webchaind/logger/glog"
 	"github.com/webchain-network/webchaind/rlp"
+	"math/big"
 )
 
 var (
@@ -51,8 +50,8 @@ var (
 
 	blockHashPrefix = []byte("block-hash-") // [deprecated by the header/block split, remove eventually]
 
-	preimagePrefix = "secure-key-"              // preimagePrefix + hash -> preimage
-	lookupPrefix        = []byte("l") // lookupPrefix + hash -> transaction/receipt lookup metadata
+	preimagePrefix = "secure-key-" // preimagePrefix + hash -> preimage
+	lookupPrefix   = []byte("l")   // lookupPrefix + hash -> transaction/receipt lookup metadata
 )
 
 // TxLookupEntry is a positional metadata to help looking up the data content of
@@ -520,7 +519,6 @@ func WriteTxLookupEntries(db ethdb.Putter, block *types.Block) error {
 	}
 	return nil
 }
-
 
 // [deprecated by the header/block split, remove eventually]
 // GetBlockByHashOld returns the old combined block corresponding to the hash

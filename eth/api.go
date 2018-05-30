@@ -25,6 +25,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"math"
 	"math/big"
 	"os"
 	"runtime"
@@ -34,6 +35,7 @@ import (
 	"github.com/webchain-network/webchaind/accounts"
 	"github.com/webchain-network/webchaind/common"
 	"github.com/webchain-network/webchaind/common/compiler"
+	"github.com/webchain-network/webchaind/common/hexutil"
 	"github.com/webchain-network/webchaind/core"
 	"github.com/webchain-network/webchaind/core/state"
 	"github.com/webchain-network/webchaind/core/types"
@@ -279,6 +281,15 @@ func (s *PrivateMinerAPI) SetEtherbase(etherbase common.Address) bool {
 	return true
 }
 
+func (s *PrivateMinerAPI) SetExtra(b hexutil.Bytes) bool {
+	// types.HeaderExtraMax is the size limit for Header.Extra
+	if len(b) > types.HeaderExtraMax {
+		return false
+	}
+	miner.HeaderExtra = b
+	return true
+}
+
 // PublicTxPoolAPI offers and API for the transaction pool. It only operates on data that is non confidential.
 type PublicTxPoolAPI struct {
 	e *Ethereum
@@ -470,12 +481,13 @@ func (s *PrivateAccountAPI) LockAccount(addr common.Address) bool {
 // The key used to calculate the signature is decrypted with the given password.
 //
 // https://github.com/ethereum/go-ethereum/wiki/Management-APIs#personal_sign
-func (s *PrivateAccountAPI) Sign(data []byte, addr common.Address, passwd string) (string, error) {
+func (s *PrivateAccountAPI) Sign(data hexutil.Bytes, addr common.Address, passwd string) (hexutil.Bytes, error) {
 	signature, err := s.am.SignWithPassphrase(addr, passwd, signHash(data))
-	if err == nil {
-		signature[64] += 27 // Transform V from 0/1 to 27/28 according to the yellow paper
+	if err != nil {
+		return nil, err
 	}
-	return common.ToHex(signature), nil
+	signature[64] += 27 // Transform V from 0/1 to 27/28 according to the yellow paper
+	return signature, nil
 }
 
 // SendTransaction will create a transaction from the given arguments and
@@ -520,6 +532,7 @@ type PublicBlockChainAPI struct {
 	config                  *core.ChainConfig
 	bc                      *core.BlockChain
 	chainDb                 ethdb.Database
+	indexesDb               ethdb.Database
 	eventMux                *event.TypeMux
 	muNewBlockSubscriptions sync.Mutex                             // protects newBlocksSubscriptions
 	newBlockSubscriptions   map[string]func(core.ChainEvent) error // callbacks for new block subscriptions
@@ -1293,14 +1306,44 @@ func signHash(data []byte) []byte {
 	return crypto.Keccak256([]byte(msg))
 }
 
+// EcRecover returns the address for the account that was used to create the signature.
+// Note, this function is compatible with eth_sign and personal_sign. As such it recovers
+// the address of:
+// hash = keccak256("\x19Ethereum Signed Message:\n"${message length}${message})
+// addr = ecrecover(hash, signature)
+//
+// Note, the signature must conform to the secp256k1 curve R, S and V values, where
+// the V value must be be 27 or 28 for legacy reasons.
+//
+// https://github.com/ethereum/go-ethereum/wiki/Management-APIs#personal_ecRecover
+func (s *PrivateAccountAPI) EcRecover(data, sig hexutil.Bytes) (common.Address, error) {
+	if len(sig) != 65 {
+		return common.Address{}, fmt.Errorf("signature must be 65 bytes long")
+	}
+	if sig[64] != 27 && sig[64] != 28 {
+		return common.Address{}, fmt.Errorf("invalid Ethereum signature (V is not 27 or 28)")
+	}
+	sig[64] -= 27 // Transform yellow paper V from 27/28 to 0/1
+
+	rpk, err := crypto.Ecrecover(signHash(data), sig)
+	if err != nil {
+		return common.Address{}, err
+	}
+	pubKey := crypto.ToECDSAPub(rpk)
+	recoveredAddr := crypto.PubkeyToAddress(*pubKey)
+	return recoveredAddr, nil
+}
+
 // Sign signs the given hash using the key that matches the address. The key must be
 // unlocked in order to sign the hash.
-func (s *PublicTransactionPoolAPI) Sign(addr common.Address, data []byte) (string, error) {
-	signature, err := s.am.Sign(addr, signHash(data))
-	if err == nil {
-		signature[64] += 27 // Transform V from 0/1 to 27/28 according to the yellow paper
+func (s *PublicBlockChainAPI) Sign(addr common.Address, data hexutil.Bytes) (hexutil.Bytes, error) {
+	signed := signHash(data)
+	signature, err := s.am.Sign(addr, signed)
+	if err != nil {
+		return nil, err
 	}
-	return common.ToHex(signature), err
+	signature[64] += 27 // Transform V from 0/1 to 27/28 according to the yellow paper
+	return signature, err
 }
 
 // SignTransactionArgs represents the arguments to sign a transaction.
@@ -1623,6 +1666,111 @@ func (api *PrivateAdminAPI) ImportChain(file string) (bool, error) {
 
 // PublicDebugAPI is the collection of Etheruem APIs exposed over the public
 // debugging endpoint.
+type PublicGethAPI struct {
+	eth *Ethereum
+}
+
+// NewPublicDebugAPI creates a new API definition for the public debug methods
+// of the Ethereum service.
+func NewPublicGethAPI(eth *Ethereum) *PublicGethAPI {
+	return &PublicGethAPI{eth: eth}
+}
+
+// GetTransactionsByAddress is an alias for GetAddressTransactions which aligns more closely
+// with established eth_transaction api namespace
+func (api *PublicGethAPI) GetTransactionsByAddress(address common.Address, blockStartN uint64, blockEndN rpc.BlockNumber, toOrFrom string, txKindOf string, pagStart, pagEnd int, reverse bool) (list []string, err error) {
+	return api.GetAddressTransactions(address, blockStartN, blockEndN, toOrFrom, txKindOf, pagStart, pagEnd, reverse)
+}
+
+// AddressTransactions gets transactions for a given address.
+// Optional values include start and stop block numbers, and to/from/both value for tx/address relation.
+// Returns a slice of strings of transactions hashes.
+func (api *PublicGethAPI) GetAddressTransactions(address common.Address, blockStartN uint64, blockEndN rpc.BlockNumber, toOrFrom string, txKindOf string, pagStart, pagEnd int, reverse bool) (list []string, err error) {
+	glog.V(logger.Debug).Infoln("RPC call: debug_getAddressTransactions %s %d %d %s %s", address, blockStartN, blockEndN, toOrFrom, txKindOf)
+
+	atxi := api.eth.BlockChain().GetAtxi()
+	if atxi == nil {
+		return nil, errors.New("addr-tx indexing not enabled")
+	}
+	// Use human-friendly abbreviations, per https://github.com/ethereumproject/go-ethereum/pull/475#issuecomment-366065122
+	// so 't' => to, 'f' => from, 'tf|ft' => either/both. Same pattern for txKindOf.
+	// _t_o OR _f_rom
+	if toOrFrom == "tf" || toOrFrom == "ft" {
+		toOrFrom = "b"
+	}
+	// _s_tandard OR _c_ontract
+	if txKindOf == "sc" || txKindOf == "cs" {
+		txKindOf = "b"
+	}
+
+	if blockEndN == rpc.LatestBlockNumber || blockEndN == rpc.PendingBlockNumber {
+		blockEndN = 0
+	}
+
+	list = core.GetAddrTxs(atxi.Db, address, blockStartN, uint64(blockEndN.Int64()), toOrFrom, txKindOf, pagStart, pagEnd, reverse)
+
+	// Since list is a slice, it can be nil, which returns 'null'.
+	// Should return empty 'array' if no txs found.
+	if list == nil {
+		list = []string{}
+	}
+	return list, nil
+}
+
+func (api *PublicGethAPI) BuildATXI(start, stop, step rpc.BlockNumber) (bool, error) {
+	glog.V(logger.Debug).Infoln("RPC call: geth_buildATXI %v %v %v", start, stop, step)
+
+	convert := func(number rpc.BlockNumber) uint64 {
+		switch number {
+		case rpc.LatestBlockNumber, rpc.PendingBlockNumber:
+			return math.MaxUint64
+		default:
+			return uint64(number.Int64())
+		}
+	}
+
+	atxi := api.eth.BlockChain().GetAtxi()
+	if atxi == nil {
+		return false, errors.New("addr-tx indexing not enabled")
+	}
+	if atxi.AutoMode {
+		return false, errors.New("addr-tx indexing already running via the auto build mode")
+	}
+
+	progress, err := api.eth.BlockChain().GetATXIBuildProgress()
+	if err != nil {
+		return false, err
+	}
+	if progress != nil && progress.Start != uint64(math.MaxUint64) && progress.Current < progress.Stop && progress.LastError == nil {
+		return false, fmt.Errorf("ATXI build process is already running (first block: %d, last block: %d, current block: %d\n)", progress.Start, progress.Stop, progress.Current)
+	}
+
+	go core.BuildAddrTxIndex(api.eth.BlockChain(), api.eth.ChainDb(), atxi.Db, convert(start), convert(stop), convert(step))
+
+	return true, nil
+}
+
+func (api *PublicGethAPI) GetATXIBuildStatus() (*core.AtxiProgressT, error) {
+	atxi := api.eth.BlockChain().GetAtxi()
+	if atxi == nil {
+		return nil, errors.New("addr-tx indexing not enabled")
+	}
+	if atxi.Progress == nil {
+		return nil, errors.New("no progress available for unstarted atxi indexing process")
+	}
+
+	progress, err := api.eth.BlockChain().GetATXIBuildProgress()
+	if err != nil {
+		return nil, err
+	}
+	if progress.Start == progress.Current {
+		return nil, nil
+	}
+	return progress, nil
+}
+
+// PublicDebugAPI is the collection of Etheruem APIs exposed over the public
+// debugging endpoint.
 type PublicDebugAPI struct {
 	eth *Ethereum
 }
@@ -1680,6 +1828,13 @@ func (api *PublicDebugAPI) PrintBlock(number uint64) (string, error) {
 		return "", fmt.Errorf("block #%d not found", number)
 	}
 	return fmt.Sprintf("%s", block), nil
+}
+
+func (api *PublicDebugAPI) SetHead(number uint64) (bool, error) {
+	if e := api.eth.BlockChain().SetHead(number); e != nil {
+		return false, e
+	}
+	return true, nil
 }
 
 // Metrics return all available registered metrics for the client.

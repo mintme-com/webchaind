@@ -12,83 +12,70 @@ The simplest way to get started running a node is to visit our [Releases page](h
 If your heart is set on the bleeding edge, install from source. However, please be advised that you may encounter some strange things, and we can't prioritize support beyond the release versions. Recommended for developers only.
 
 #### Dependencies
-Building webchaind requires both Go >=1.9 and a C compiler.
+Building webchaind requires both Go >=1.9 and a C compiler. On Linux systems,
+a C compiler can, for example, by installed with `sudo apt-get install
+build-essential`. On Mac: `xcode-select --install`.
 
 #### Get source and dependencies
-`$ go get -v github.com/webchain-network/webchaind/...`
-
-#### Installing command executables
-
-To install...
-
-- the full suite of utilities: `$ go install github.com/webchain-network/webchaind/cmd/...`
-- just __webchaind__: `$ go install github.com/webchain-network/webchaind/cmd/webchaind`
-
-Executables built from source will, by default, be installed in `$GOPATH/bin/`.
-
-#### Building specific release
-All the above commands results with building binaries from `HEAD`. To use a specific release/tag, use the following:
 ```
+`$ go get -v github.com/webchain-network/webchaind/...`
+```
+
+#### Install and build command executables
+
+Executables installed from source will, by default, be installed in `$GOPATH/bin/`.
+
+##### With go:
+
+- the full suite of utilities:
+```
+$ go install github.com/webchain-network/webchaind/cmd/...`
+```
+
+- just __webchaind__:
+```
+$ go install github.com/webchain-network/webchaind/cmd/webchaind`
+```
+
+##### With make:
+```
+$ cd $GOPATH/src/github.com/webchain-network/webchaind
+```
+
+- the full suite of utilities:
+```
+$ make install
+```
+
+- just __webchaind__:
+```
+$ make install_webchaind
+```
+
+> For further `make` information, use `make help` to see a list and description of available make
+> commands.
+
+
+##### Building a specific release
+All the above commands results with building binaries from `HEAD`. To use a specific release/tag, use the following before installing:
+
+```shell
 $ go get -d github.com/webchain-network/webchaind/...
 $ cd $GOPATH/src/github.com/webchain-network/webchaind
 $ git checkout <TAG OR REVISION>
-$ go install -ldflags "-X main.Version="`git describe --tags` ./cmd/...
+# Use a go or make command above.
 ```
 
-#### Using release source code tarball
+##### Using a release source code tarball
 Because of strict Go directory structure, the tarball needs to be extracted into the proper subdirectory under `$GOPATH`.
-The following commands are an example of building the v4.1.1 release:
-```
-$ mkdir -p $GOPATH/src/github.com/webchain-network
+The following commands are an example of building the v0.1.0 release:
+
+```shell
+$ mkdir -p $GOPATH/src/github.com/webchain-network/webchaind
 $ cd $GOPATH/src/github.com/webchain-network
 $ tar xzf /path/to/v0.1.0.tar.gz
-$ mv v0.1.0 webchaind
 $ cd webchaind
-$ go install -ldflags "-X main.Version=v0.1.0" ./cmd/...
-```
-
-#### Building with [SputnikVM](https://github.com/ethereumproject/sputnikvm)
-Have Rust (>= 1.21) and Golang (>= 1.9) installed.
-
-> For __Linux__ and __macOS__:
-
-```
-cd $GOPATH/src/github.com/ethereumproject
-git clone https://github.com/ethereumproject/sputnikvm-ffi
-cd sputnikvm-ffi/c/ffi
-cargo build --release
-cp $GOPATH/src/github.com/ethereumproject/sputnikvm-ffi/c/ffi/target/release/libsputnikvm_ffi.a $GOPATH/src/github.com/ethereumproject/sputnikvm-ffi/c/libsputnikvm.a
-```
-And then build webchaind with CGO_LDFLAGS:
-
-- In Linux:
-
-```
-cd $GOPATH/src/github.com/webchain-network/webchaind/cmd/webchaind
-CGO_LDFLAGS="$GOPATH/src/github.com/ethereumproject/sputnikvm-ffi/c/libsputnikvm.a -ldl" go build -tags=sputnikvm .
-```
-
-- In macOS:
-
-```
-cd $GOPATH/src/github.com/webchain-network/webchaind/cmd/webchaind
-CGO_LDFLAGS="$GOPATH/src/github.com/ethereumproject/sputnikvm-ffi/c/libsputnikvm.a -ldl -lresolv" go build -tags=sputnikvm .
-```
-
-> For __Windows__:
-
-```
-cd %GOPATH%\src\github.com\ethereumproject
-git clone https://github.com/ethereumproject/sputnikvm-ffi
-cd sputnikvm-ffi\c\ffi
-cargo build --release
-copy %GOPATH%\src\github.com\ethereumproject\sputnikvm-ffi\c\ffi\target\release\sputnikvm.lib %GOPATH%\src\github.com\ethereumproject\sputnikvm-ffi\c\sputnikvm.lib
-```
-And then build webchaind with CGO_LDFLAGS:
-```
-cd %GOPATH%\src\github.com\webchain-network\webchaind\cmd\webchaind
-set CGO_LDFLAGS=-Wl,--allow-multiple-definition %GOPATH%\src\github.com\ethereumproject\sputnikvm-ffi\c\sputnikvm.lib -lws2_32 -luserenv
-go build -tags=sputnikvm .
+# Use a go or make command above.
 ```
 
 ## Executables
@@ -115,6 +102,7 @@ By default, webchaind will store all node and blockchain data in a __parent dire
 __You can specify this directory__ with `--data-dir=$HOME/id/rather/put/it/here`.
 
 Within this parent directory, webchaind will use a __/subdirectory__ to hold data for each network you run. The defaults are:
+
  - `/mainnet` for the Mainnet
  - `/morden` for the Morden Testnet
 
@@ -139,12 +127,13 @@ $ webchaind --fast
 Using webchaind in fast sync mode causes it to download only block _state_ data -- leaving out bulky transaction records -- which avoids a lot of CPU and memory intensive processing.
 
 Fast sync will be automatically __disabled__ (and full sync enabled) when:
+
 - your chain database contains *any* full blocks
 - your node has synced up to the current head of the network blockchain
 
 In case of using `--mine` together with `--fast`, webchaind will operate as described; syncing in fast mode up to the head, and then begin mining once it has synced its first full block at the head of the chain.
 
-*Note:* To further increase webchaind performace, you can use a `--cache=512` flag to bump the memory allowance of the database (e.g. 512MB) which can significantly improve sync times, especially for HDD users. This flag is optional and you can set it as high or as low as you'd like, though we'd recommend the 512MB - 2GB range.
+*Note:* To further increase webchaind performace, you can use a `--cache=2054` flag to bump the memory allowance of the database (e.g. 2054MB) which can significantly improve sync times, especially for HDD users. This flag is optional and you can set it as high or as low as you'd like, though we'd recommend the 1GB - 2GB range.
 
 ### Create or manage account(s)
 
@@ -203,10 +192,10 @@ If you'd like to play around with creating Webchain contracts, you
 almost certainly would like to do that without any real money involved until you get the hang of the entire system. In other words, instead of attaching to the main network, you want to join the **test** network with your node, which is fully equivalent to the main network, but with play-Ether only.
 
 ```
-$ webchaind --chain=morden --fast --cache=512 console
+$ webchaind --chain=morden --fast console
 ```
 
-The `--fast`, `--cache` flags and `console` subcommand have the exact same meaning as above and they are equally useful on the testnet too. Please see above for their explanations if you've skipped to here.
+The `--fast` flag and `console` subcommand have the exact same meaning as above and they are equally useful on the testnet too. Please see above for their explanations if you've skipped to here.
 
 Specifying the `--chain=morden` flag will reconfigure your webchaind instance a bit:
 

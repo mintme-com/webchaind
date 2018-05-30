@@ -29,9 +29,9 @@ import (
 	"testing/quick"
 
 	"github.com/webchain-network/webchaind/common"
+	"github.com/webchain-network/webchaind/core/vm"
 	"github.com/webchain-network/webchaind/ethdb"
 	"gopkg.in/check.v1"
-	"github.com/webchain-network/webchaind/core/vm"
 )
 
 // Tests that updating a state trie does not leak any database writes prior to

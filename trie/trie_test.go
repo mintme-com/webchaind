@@ -18,21 +18,21 @@ package trie
 
 import (
 	"bytes"
-	"testing"
+	"encoding/binary"
+	"errors"
 	"fmt"
 	"github.com/davecgh/go-spew/spew"
 	"github.com/webchain-network/webchaind/common"
+	"github.com/webchain-network/webchaind/crypto"
 	"github.com/webchain-network/webchaind/ethdb"
-	"encoding/binary"
-	"reflect"
-	"testing/quick"
-	"os"
+	"github.com/webchain-network/webchaind/rlp"
+	"io/ioutil"
 	"math/big"
 	"math/rand"
-	"errors"
-	"io/ioutil"
-	"github.com/webchain-network/webchaind/crypto"
-	"github.com/webchain-network/webchaind/rlp"
+	"os"
+	"reflect"
+	"testing"
+	"testing/quick"
 )
 
 func init() {

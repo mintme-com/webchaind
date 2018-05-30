@@ -123,6 +123,7 @@ func makeCLIApp() (app *cli.App) {
 		gpuBenchCommand,
 		versionCommand,
 		makeMlogDocCommand,
+		buildAddrTxIndexCommand,
 	}
 
 	app.Flags = []cli.Flag{
@@ -140,6 +141,8 @@ func makeCLIApp() (app *cli.App) {
 		ChainIdentityFlag,
 		BlockchainVersionFlag,
 		FastSyncFlag,
+		AddrTxIndexFlag,
+		AddrTxIndexAutoBuildFlag,
 		CacheFlag,
 		LightKDFFlag,
 		JSpathFlag,

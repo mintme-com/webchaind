@@ -17,8 +17,8 @@
 package trie
 
 import (
-	"github.com/webchain-network/webchaind/common"
 	"fmt"
+	"github.com/webchain-network/webchaind/common"
 	"github.com/webchain-network/webchaind/logger/glog"
 )
 

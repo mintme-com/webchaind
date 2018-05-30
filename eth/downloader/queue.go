@@ -27,10 +27,10 @@ import (
 
 	"github.com/webchain-network/webchaind/common"
 	"github.com/webchain-network/webchaind/core/types"
+	"github.com/webchain-network/webchaind/logger"
 	"github.com/webchain-network/webchaind/logger/glog"
 	"github.com/webchain-network/webchaind/metrics"
 	"gopkg.in/karalabe/cookiejar.v2/collections/prque"
-	"github.com/webchain-network/webchaind/logger"
 )
 
 var blockCacheLimit = 8192 // Maximum number of blocks to cache before throttling the download

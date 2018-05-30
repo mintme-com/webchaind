@@ -83,7 +83,7 @@ var (
 	CacheFlag = cli.IntFlag{
 		Name:  "cache",
 		Usage: "Megabytes of memory allocated to internal caching (min 16MB / database forced)",
-		Value: 128,
+		Value: 1024,
 	}
 	BlockchainVersionFlag = cli.IntFlag{
 		Name:  "blockchain-version,blockchainversion",
@@ -97,6 +97,14 @@ var (
 	LightKDFFlag = cli.BoolFlag{
 		Name:  "light-kdf,lightkdf",
 		Usage: "Reduce key-derivation RAM & CPU usage at some expense of KDF strength",
+	}
+	AddrTxIndexFlag = cli.BoolFlag{
+		Name:  "atxi,add-tx-index",
+		Usage: "Toggle indexes for transactions by address. Pre-existing chaindata can be indexed with command 'atxi-build'",
+	}
+	AddrTxIndexAutoBuildFlag = cli.BoolFlag{
+		Name:  "atxi.autobuild,atxi.auto-build",
+		Usage: "Begins automatic concurrent indexes building process that runs alongside a normally running geth.",
 	}
 	// Network Split settings
 	ETFChain = cli.BoolFlag{
