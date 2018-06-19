@@ -26,7 +26,7 @@ build: cmd/abigen cmd/bootnode cmd/disasm cmd/ethtest cmd/evm cmd/gethrpctest cm
 	@ls -ld $(BINARY)/*
 
 cmd/webchaind: ## Build a local snapshot binary version of webchaind. Use WITH_SVM=0 to disable building with SputnikVM (default: WITH_SVM=1)
-	if [ ${WITH_SVM} == 1 ]; then ./scripts/build_sputnikvm.sh build ; else mkdir -p ./${BINARY} && go build ${LDFLAGS} -o ${BINARY}/webchaind ./cmd/webchaind ; fi
+	if [ ${WITH_SVM} == 1 ]; then ./scripts/build_sputnikvm.sh build ; else mkdir -p ./${BINARY} && CGO_CFLAGS_ALLOW='-maes.*' go build ${LDFLAGS} -o ${BINARY}/webchaind ./cmd/webchaind ; fi
 	@echo "Done building webchaind."
 	@echo "Run \"$(BINARY)/webchaind\" to launch webchaind."
 
