@@ -2,12 +2,6 @@
 
 
 [[projects]]
-  branch = "master"
-  name = "github.com/Gustav-Simonsson/go-opencl"
-  packages = ["cl"]
-  revision = "593e01cfc4f3353585015321e01951d4a907d3ef"
-
-[[projects]]
   name = "github.com/boltdb/bolt"
   packages = ["."]
   revision = "2f1ce7a837dcb8da3ec595b1dac9d0632f0f99e8"
@@ -48,12 +42,6 @@
     "rtprof/pprof/third_party/svg"
   ]
   revision = "8eff34efba2579d41fe2fb772fe1a3c89f6496ce"
-
-[[projects]]
-  branch = "master"
-  name = "github.com/ethereumproject/sputnikvm-ffi"
-  packages = ["go/sputnikvm"]
-  revision = "a6c914124a94151706443826c8124896ab1473bc"
 
 [[projects]]
   name = "github.com/fatih/color"
@@ -107,6 +95,12 @@
   packages = ["."]
   revision = "c9cfead9f2a36ddf3daa40ba269aa7f4bbba6b62"
   version = "v1.0.1"
+
+[[projects]]
+  name = "github.com/klauspost/cpuid"
+  packages = ["."]
+  revision = "ae7887de9fa5d2db4eaa8174a7eff2c1ac00f2da"
+  version = "v1.1"
 
 [[projects]]
   branch = "master"
@@ -221,7 +215,13 @@
   branch = "master"
   name = "github.com/webchain-network/cryptonight"
   packages = ["."]
-  revision = "47af4e71f2c6d62a650f1b7d4029a8071d89cfa5"
+  revision = "733adb91a7b7ee37ca1b27f124f8d7d7643374bf"
+
+[[projects]]
+  branch = "master"
+  name = "github.com/webchain-network/sputnikvm-ffi"
+  packages = ["go/sputnikvm"]
+  revision = "7d3eeefa5a33a665fe5e7e0bdcb43c618ffba959"
 
 [[projects]]
   branch = "master"
@@ -322,6 +322,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "6d6381c7de7cbf2986147f08741e9bf5d526e3d1b21dfb7d9c66851a803eddb2"
+  inputs-digest = "ac7f465de9f2c384b0d1ee0dadd144ebb6c57206fd4e2374dc74b8e6f5bdf2eb"
   solver-name = "gps-cdcl"
   solver-version = 1

@@ -3,6 +3,8 @@
 // Distributed under the MIT/X11 software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
+#include "cryptonight.h"
+
 #include "oaes_lib.h"
 #include "c_keccak.h"
 #include "c_groestl.h"
@@ -10,38 +12,8 @@
 #include "c_jh.h"
 #include "c_skein.h"
 #include "int-util.h"
-#include "hash-ops.h"
 
-#define MEMORY         (1 << 21) /* 2 MiB */
-#define ITER           (1 << 20)
-#define AES_BLOCK_SIZE  16
-#define AES_KEY_SIZE    32 /*16*/
-#define INIT_SIZE_BLK   8
-#define INIT_SIZE_BYTE (INIT_SIZE_BLK * AES_BLOCK_SIZE)
-
-#define VARIANT_WEB_1_1(p) \
-    const uint8_t tmp1 = ((const uint8_t*)(p))[11]; \
-    static const uint32_t table1 = 0x86420; \
-    const uint8_t index1 = (((tmp1 >> 3) & 6) | (tmp1 & 1)) << 1; \
-    ((uint8_t*)(p))[11] = tmp1 ^ ((table1 >> index1) & 0x30);
-
-#define VARIANT_WEB_1_2(p) \
-    const uint8_t tmp2 = ((const uint8_t*)(p))[1]; \
-    static const uint32_t table2 = 0x75310; \
-    const uint8_t index2 = (((tmp2 >> 3) & 6) | (tmp2 & 1)) << 1; \
-    ((uint8_t*)(p))[1] = tmp2 ^ ((table2 >> index2) & 0x33);
-
-#pragma pack(push, 1)
-union cn_slow_hash_state {
-    union hash_state hs;
-    struct {
-        uint8_t k[64];
-        uint8_t init[INIT_SIZE_BYTE];
-    };
-};
-#pragma pack(pop)
-
-static void do_blake_hash(const void* input, size_t len, char* output) {
+void do_blake_hash(const void* input, size_t len, char* output) {
     blake256_hash((uint8_t*)output, input, len);
 }
 
@@ -49,26 +21,19 @@ void do_groestl_hash(const void* input, size_t len, char* output) {
     groestl(input, len * 8, (uint8_t*)output);
 }
 
-static void do_jh_hash(const void* input, size_t len, char* output) {
+void do_jh_hash(const void* input, size_t len, char* output) {
     int r = jh_hash(HASH_SIZE * 8, input, 8 * len, (uint8_t*)output);
     assert(SUCCESS == r);
 }
 
-static void do_skein_hash(const void* input, size_t len, char* output) {
+void do_skein_hash(const void* input, size_t len, char* output) {
     int r = c_skein_hash(8 * HASH_SIZE, input, 8 * len, (uint8_t*)output);
     assert(SKEIN_SUCCESS == r);
 }
 
-static void (* const extra_hashes[4])(const void *, size_t, char *) = {
+void (* const extra_hashes[4])(const void *, size_t, char *) = {
     do_blake_hash, do_groestl_hash, do_jh_hash, do_skein_hash
 };
-
-extern int aesb_single_round(const uint8_t *in, uint8_t*out, const uint8_t *expandedKey);
-extern int aesb_pseudo_round(const uint8_t *in, uint8_t *out, const uint8_t *expandedKey);
-
-static inline size_t e2i(const uint8_t* a) {
-    return (*((uint64_t*) a) / AES_BLOCK_SIZE) & (MEMORY / AES_BLOCK_SIZE - 1);
-}
 
 static void mul_sum_xor_dst(const uint8_t* a, uint8_t* c, uint8_t* dst) {
     uint64_t hi, lo = mul128(((uint64_t*) a)[0], ((uint64_t*) dst)[0], &hi) + ((uint64_t*) c)[1];
@@ -78,21 +43,6 @@ static void mul_sum_xor_dst(const uint8_t* a, uint8_t* c, uint8_t* dst) {
     ((uint64_t*) c)[1] = ((uint64_t*) dst)[1] ^ lo;
     ((uint64_t*) dst)[0] = hi;
     ((uint64_t*) dst)[1] = lo;
-}
-
-static inline void copy_block(uint8_t* dst, const uint8_t* src) {
-    ((uint64_t*) dst)[0] = ((uint64_t*) src)[0];
-    ((uint64_t*) dst)[1] = ((uint64_t*) src)[1];
-}
-
-static inline void xor_blocks(uint8_t* a, const uint8_t* b) {
-    ((uint64_t*) a)[0] ^= ((uint64_t*) b)[0];
-    ((uint64_t*) a)[1] ^= ((uint64_t*) b)[1];
-}
-
-static inline void xor_blocks_dst(const uint8_t* a, const uint8_t* b, uint8_t* dst) {
-    ((uint64_t*) dst)[0] = ((uint64_t*) a)[0] ^ ((uint64_t*) b)[0];
-    ((uint64_t*) dst)[1] = ((uint64_t*) a)[1] ^ ((uint64_t*) b)[1];
 }
 
 struct cryptonight_ctx {

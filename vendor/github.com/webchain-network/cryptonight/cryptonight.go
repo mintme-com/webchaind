@@ -20,6 +20,7 @@
 package cryptonight
 
 /*
+#cgo amd64 CFLAGS: -maes
 #include "cryptonight.h"
 #include <stdlib.h>
 */
@@ -38,6 +39,8 @@ import (
 	"github.com/webchain-network/webchaind/logger"
 	"github.com/webchain-network/webchaind/logger/glog"
 	"github.com/webchain-network/webchaind/pow"
+
+	"github.com/klauspost/cpuid"
 )
 
 var (
@@ -114,7 +117,11 @@ func (pow *Cryptonight) compute(ctx unsafe.Pointer, blockBytes []byte, nonce uin
 
 	var in unsafe.Pointer = C.CBytes(blockBytes)
 	var out unsafe.Pointer = C.malloc(common.HashLength)
-	C.cryptonight_hash(ctx, (*C.char)(in), (*C.char)(out), C.uint32_t(len(blockBytes)))
+	if cpuid.CPU.AesNi() {
+		C.cryptonight_hash_aesni(ctx, (*C.char)(in), (*C.char)(out), C.uint32_t(len(blockBytes)))
+	} else {
+		C.cryptonight_hash(ctx, (*C.char)(in), (*C.char)(out), C.uint32_t(len(blockBytes)))
+	}
 
 	var hash common.Hash = bytesToHash(unsafe.Pointer(out))
 
@@ -124,7 +131,18 @@ func (pow *Cryptonight) compute(ctx unsafe.Pointer, blockBytes []byte, nonce uin
 	return hash
 }
 
-func (pow *Cryptonight) VerifyBytes(headerBytes []byte, difficulty *big.Int, nonce uint64) bool {
+func (pow *Cryptonight) CalcHash(headerBytes []byte, nonce uint64) *big.Int {
+	var ctx unsafe.Pointer = C.cryptonight_create()
+	result := pow.compute(ctx, headerBytes, nonce)
+	C.cryptonight_destroy(ctx)
+
+	return result.Big()
+}
+
+func (pow *Cryptonight) Verify(block pow.Block) bool {
+	difficulty := block.Difficulty()
+	headerBytes := types.HeaderToBytes(block.Header())
+
 	/* Cannot happen if block header diff is validated prior to PoW, but can
 		 happen if PoW is checked first due to parallel PoW checking.
 	*/
@@ -133,19 +151,11 @@ func (pow *Cryptonight) VerifyBytes(headerBytes []byte, difficulty *big.Int, non
 		return false
 	}
 
-	var ctx unsafe.Pointer = C.cryptonight_create()
-	result := pow.compute(ctx, headerBytes, nonce)
-	C.cryptonight_destroy(ctx)
+	result := pow.CalcHash(headerBytes, block.Nonce())
 
 	// The actual check.
 	target := new(big.Int).Div(maxUint256, difficulty)
-	return result.Big().Cmp(target) <= 0
-}
-
-func (pow *Cryptonight) Verify(block pow.Block) bool {
-	difficulty := block.Difficulty()
-	headerBytes := types.HeaderToBytes(block.Header())
-	return pow.VerifyBytes(headerBytes, difficulty, block.Nonce())
+	return result.Cmp(target) <= 0
 }
 
 func New() *Cryptonight {

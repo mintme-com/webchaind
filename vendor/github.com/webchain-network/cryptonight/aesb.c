@@ -94,28 +94,13 @@ extern "C"
     w(0x8c), w(0xa1), w(0x89), w(0x0d), w(0xbf), w(0xe6), w(0x42), w(0x68),\
     w(0x41), w(0x99), w(0x2d), w(0x0f), w(0xb0), w(0x54), w(0xbb), w(0x16) }
 
-#define rc_data(w) {\
-    w(0x01), w(0x02), w(0x04), w(0x08), w(0x10),w(0x20), w(0x40), w(0x80),\
-    w(0x1b), w(0x36) }
-
 #define bytes2word(b0, b1, b2, b3) (((uint32_t)(b3) << 24) | \
     ((uint32_t)(b2) << 16) | ((uint32_t)(b1) << 8) | (b0))
-
-#define h0(x)   (x)
-#define w0(p)   bytes2word(p, 0, 0, 0)
-#define w1(p)   bytes2word(0, p, 0, 0)
-#define w2(p)   bytes2word(0, 0, p, 0)
-#define w3(p)   bytes2word(0, 0, 0, p)
 
 #define u0(p)   bytes2word(f2(p), p, p, f3(p))
 #define u1(p)   bytes2word(f3(p), f2(p), p, p)
 #define u2(p)   bytes2word(p, f3(p), f2(p), p)
 #define u3(p)   bytes2word(p, p, f3(p), f2(p))
-
-#define v0(p)   bytes2word(fe(p), f9(p), fd(p), fb(p))
-#define v1(p)   bytes2word(fb(p), fe(p), f9(p), fd(p))
-#define v2(p)   bytes2word(fd(p), fb(p), fe(p), f9(p))
-#define v3(p)   bytes2word(f9(p), fd(p), fb(p), fe(p))
 
 #define f2(x)   ((x<<1) ^ (((x>>7) & 1) * WPOLY))
 #define f4(x)   ((x<<2) ^ (((x>>6) & 1) * WPOLY) ^ (((x>>6) & 2) * WPOLY))
