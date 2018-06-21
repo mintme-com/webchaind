@@ -32,7 +32,6 @@ import (
 	"github.com/webchain-network/webchaind/common"
 	"github.com/webchain-network/webchaind/console"
 	"github.com/webchain-network/webchaind/core"
-	"github.com/webchain-network/webchaind/eth"
 	"github.com/webchain-network/webchaind/logger"
 	"github.com/webchain-network/webchaind/metrics"
 )
@@ -240,7 +239,6 @@ func makeCLIApp() (app *cli.App) {
 
 		if ctx.IsSet(SputnikVMFlag.Name) {
 			if core.SputnikVMExists {
-				log.Printf("Using the SputnikVM Ethereum Virtual Machine implementation ...")
 				core.UseSputnikVM = true
 			} else {
 				log.Fatal("This version of webchaind wasn't built to include SputnikVM. To build with SputnikVM, use -tags=sputnikvm following the go build command.")
@@ -264,12 +262,6 @@ func makeCLIApp() (app *cli.App) {
 		if s := ctx.String("metrics"); s != "" {
 			go metrics.CollectToFile(s)
 		}
-
-		// This should be the only place where reporting is enabled
-		// because it is not intended to run while testing.
-		// In addition to this check, bad block reports are sent only
-		// for chains with the main network genesis block and network id 1.
-		eth.EnableBadBlockReporting = true
 
 		// (whilei): I use `log` instead of `glog` because git diff tells me:
 		// > The output of this command is supposed to be machine-readable.

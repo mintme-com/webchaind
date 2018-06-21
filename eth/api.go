@@ -1656,8 +1656,8 @@ func (api *PrivateAdminAPI) ImportChain(file string) (bool, error) {
 			continue
 		}
 		// Import the batch and reset the buffer
-		if _, err := api.eth.BlockChain().InsertChain(blocks); err != nil {
-			return false, fmt.Errorf("batch %d: failed to insert: %v", batch, err)
+		if res := api.eth.BlockChain().InsertChain(blocks); res.Error != nil {
+			return false, fmt.Errorf("batch %d: failed to insert: %v", batch, res.Error)
 		}
 		blocks = blocks[:0]
 	}
@@ -1707,7 +1707,10 @@ func (api *PublicGethAPI) GetAddressTransactions(address common.Address, blockSt
 		blockEndN = 0
 	}
 
-	list = core.GetAddrTxs(atxi.Db, address, blockStartN, uint64(blockEndN.Int64()), toOrFrom, txKindOf, pagStart, pagEnd, reverse)
+	list, err = core.GetAddrTxs(atxi.Db, address, blockStartN, uint64(blockEndN.Int64()), toOrFrom, txKindOf, pagStart, pagEnd, reverse)
+	if err != nil {
+		return
+	}
 
 	// Since list is a slice, it can be nil, which returns 'null'.
 	// Should return empty 'array' if no txs found.

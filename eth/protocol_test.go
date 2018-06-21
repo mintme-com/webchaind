@@ -25,6 +25,7 @@ import (
 	"github.com/webchain-network/webchaind/common"
 	"github.com/webchain-network/webchaind/core/types"
 	"github.com/webchain-network/webchaind/crypto"
+	"github.com/webchain-network/webchaind/eth/downloader"
 	"github.com/webchain-network/webchaind/p2p"
 	"github.com/webchain-network/webchaind/rlp"
 )
@@ -42,7 +43,7 @@ func TestStatusMsgErrors62(t *testing.T) { testStatusMsgErrors(t, 62) }
 func TestStatusMsgErrors63(t *testing.T) { testStatusMsgErrors(t, 63) }
 
 func testStatusMsgErrors(t *testing.T, protocol int) {
-	pm := newTestProtocolManagerMust(t, false, 0, nil, nil)
+	pm, _ := newTestProtocolManagerMust(t, downloader.FullSync, 0, nil, nil)
 	td, currentBlock, genesis := pm.blockchain.Status()
 	defer pm.Stop()
 
@@ -96,8 +97,8 @@ func TestRecvTransactions63(t *testing.T) { testRecvTransactions(t, 63) }
 
 func testRecvTransactions(t *testing.T, protocol int) {
 	txAdded := make(chan []*types.Transaction)
-	pm := newTestProtocolManagerMust(t, false, 0, nil, txAdded)
-	pm.synced = 1 // mark synced to accept transactions
+	pm, _ := newTestProtocolManagerMust(t, downloader.FullSync, 0, nil, txAdded)
+	pm.acceptsTxs = 1 // mark synced to accept transactions
 	p, _ := newTestPeer("peer", protocol, pm, true)
 	defer pm.Stop()
 	defer p.close()
@@ -126,7 +127,7 @@ func TestSendTransactions62(t *testing.T) { testSendTransactions(t, 62) }
 func TestSendTransactions63(t *testing.T) { testSendTransactions(t, 63) }
 
 func testSendTransactions(t *testing.T, protocol int) {
-	pm := newTestProtocolManagerMust(t, false, 0, nil, nil)
+	pm, _ := newTestProtocolManagerMust(t, downloader.FullSync, 0, nil, nil)
 	defer pm.Stop()
 
 	// Fill the pool with big transactions.

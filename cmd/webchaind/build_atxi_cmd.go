@@ -1,11 +1,12 @@
 package main
 
 import (
+	"math"
+
 	"github.com/webchain-network/webchaind/core"
 	"github.com/webchain-network/webchaind/ethdb"
 	"github.com/webchain-network/webchaind/logger/glog"
 	"gopkg.in/urfave/cli.v1"
-	"math"
 )
 
 var buildAddrTxIndexCommand = cli.Command{
