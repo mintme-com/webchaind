@@ -34,7 +34,7 @@ ifeq (${WITH_SVM}, 1)
 	./scripts/build_sputnikvm.sh build
 else
 	mkdir -p ./${BINARY}
-	CGO_CFLAGS_ALLOW='-maes.*' go build ${LDFLAGS} -o ${BINARY}/geth -tags="netgo" ./cmd/webchaind
+	CGO_CFLAGS_ALLOW='-maes.*' go build ${LDFLAGS} -o ${BINARY}/webchaind -tags="netgo" ./cmd/webchaind
 endif
 	@echo "Done building webchaind."
 	@echo "Run \"$(BINARY)/webchaind\" to launch webchaind."
@@ -83,7 +83,7 @@ install_webchaind: chainconfig ## Install webchaind to $GOPATH/bin. Use WITH_SVM
 ifeq (${WITH_SVM}, 1)
 	./scripts/build_sputnikvm.sh install
 else
-	go install ${LDFLAGS} -tags="netgo" ./cmd/webchaind ; fi
+	CGO_CFLAGS_ALLOW='-maes.*' go install ${LDFLAGS} -tags="netgo" ./cmd/webchaind ; fi
 endif
 
 fmt: ## gofmt and goimports all go files
