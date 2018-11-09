@@ -18,8 +18,9 @@
 package core
 
 import (
-	"math/big"
+	"errors"
 	"fmt"
+	"math/big"
 
 	"github.com/webchain-network/webchaind/core/state"
 	"github.com/webchain-network/webchaind/core/types"
@@ -80,7 +81,7 @@ func (p *StateProcessor) Process(block *types.Block, statedb *state.StateDB) (ty
 			}
 		}
 		statedb.StartRecord(tx.Hash(), block.Hash(), i)
-		if !UseSputnikVM {
+		if UseSputnikVM != "true" {
 			receipt, logs, _, err := ApplyTransaction(p.config, p.bc, gp, statedb, header, tx, totalUsedGas)
 			if err != nil {
 				return nil, nil, totalUsedGas, err
@@ -109,7 +110,7 @@ func (p *StateProcessor) Process(block *types.Block, statedb *state.StateDB) (ty
 func ApplyTransaction(config *ChainConfig, bc *BlockChain, gp *GasPool, statedb *state.StateDB, header *types.Header, tx *types.Transaction, usedGas *big.Int) (*types.Receipt, vm.Logs, *big.Int, error) {
 	tx.SetSigner(config.GetSigner(header.Number))
 
-	_, gas, err := ApplyMessage(NewEnv(statedb, config, bc, tx, header), tx, gp)
+	_, gas, failed, err := ApplyMessage(NewEnv(statedb, config, bc, tx, header), tx, gp)
 	if err != nil {
 		return nil, nil, nil, err
 	}
@@ -127,6 +128,11 @@ func ApplyTransaction(config *ChainConfig, bc *BlockChain, gp *GasPool, statedb 
 	logs := statedb.GetLogs(tx.Hash())
 	receipt.Logs = logs
 	receipt.Bloom = types.CreateBloom(types.Receipts{receipt})
+	if failed {
+		receipt.Status = types.TxFailure
+	} else {
+		receipt.Status = types.TxSuccess
+	}
 
 	glog.V(logger.Debug).Infoln(receipt)
 
