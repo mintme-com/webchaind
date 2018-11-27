@@ -31,24 +31,25 @@ import (
 
 	"errors"
 
-	"github.com/webchain-network/cryptonight"
-	"github.com/webchain-network/webchaind/accounts"
-	"github.com/webchain-network/webchaind/common"
-	"github.com/webchain-network/webchaind/core"
-	"github.com/webchain-network/webchaind/core/state"
-	"github.com/webchain-network/webchaind/core/types"
-	"github.com/webchain-network/webchaind/crypto"
-	"github.com/webchain-network/webchaind/eth"
-	"github.com/webchain-network/webchaind/ethdb"
-	"github.com/webchain-network/webchaind/event"
-	"github.com/webchain-network/webchaind/logger"
-	"github.com/webchain-network/webchaind/logger/glog"
-	"github.com/webchain-network/webchaind/miner"
-	"github.com/webchain-network/webchaind/node"
-	"github.com/webchain-network/webchaind/p2p/discover"
-	"github.com/webchain-network/webchaind/p2p/nat"
-	"github.com/webchain-network/webchaind/pow"
-	"github.com/webchain-network/webchaind/whisper"
+	"github.com/ethereumproject/ethash"
+	"github.com/ethereumproject/go-ethereum/accounts"
+	"github.com/ethereumproject/go-ethereum/common"
+	"github.com/ethereumproject/go-ethereum/core"
+	"github.com/ethereumproject/go-ethereum/core/state"
+	"github.com/ethereumproject/go-ethereum/core/types"
+	"github.com/ethereumproject/go-ethereum/crypto"
+	"github.com/ethereumproject/go-ethereum/eth"
+	"github.com/ethereumproject/go-ethereum/eth/downloader"
+	"github.com/ethereumproject/go-ethereum/ethdb"
+	"github.com/ethereumproject/go-ethereum/event"
+	"github.com/ethereumproject/go-ethereum/logger"
+	"github.com/ethereumproject/go-ethereum/logger/glog"
+	"github.com/ethereumproject/go-ethereum/miner"
+	"github.com/ethereumproject/go-ethereum/node"
+	"github.com/ethereumproject/go-ethereum/p2p/discover"
+	"github.com/ethereumproject/go-ethereum/p2p/nat"
+	"github.com/ethereumproject/go-ethereum/pow"
+	"github.com/ethereumproject/go-ethereum/whisper"
 	"gopkg.in/urfave/cli.v1"
 )
 
@@ -592,7 +593,6 @@ func mustMakeEthConf(ctx *cli.Context, sconf *core.SufficientChainConfig) *eth.C
 		ChainConfig:             sconf.ChainConfig,
 		Genesis:                 sconf.Genesis,
 		UseAddrTxIndex:          ctx.GlobalBool(aliasableName(AddrTxIndexFlag.Name, ctx)),
-		FastSync:                ctx.GlobalBool(aliasableName(FastSyncFlag.Name, ctx)),
 		BlockChainVersion:       ctx.GlobalInt(aliasableName(BlockchainVersionFlag.Name, ctx)),
 		DatabaseCache:           ctx.GlobalInt(aliasableName(CacheFlag.Name, ctx)),
 		DatabaseHandles:         MakeDatabaseHandles(),
@@ -611,6 +611,13 @@ func mustMakeEthConf(ctx *cli.Context, sconf *core.SufficientChainConfig) *eth.C
 		GpobaseStepUp:           ctx.GlobalInt(aliasableName(GpobaseStepUpFlag.Name, ctx)),
 		GpobaseCorrectionFactor: ctx.GlobalInt(aliasableName(GpobaseCorrectionFactorFlag.Name, ctx)),
 		SolcPath:                ctx.GlobalString(aliasableName(SolcPathFlag.Name, ctx)),
+	}
+
+	if ctx.GlobalBool(aliasableName(FastSyncFlag.Name, ctx)) {
+		ethConf.SyncMode = downloader.FastSync
+	}
+	if ctx.GlobalBool(aliasableName(SlowSyncFlag.Name, ctx)) {
+		ethConf.SyncMode = downloader.ForceFullSync
 	}
 
 	if _, ok := ethConf.GasPrice.SetString(ctx.GlobalString(aliasableName(GasPriceFlag.Name, ctx)), 0); !ok {
