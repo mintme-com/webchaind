@@ -2721,7 +2721,7 @@ AllSolidityEvents.prototype.execute = function (options, callback) {
 
     var o = this.encode(options);
     var formatter = this.decode.bind(this);
-    return new Filter(this._requestManager, o, watches.eth(), formatter, callback);
+    return new Filter(this._requestManager, o, watches.webchain(), formatter, callback);
 };
 
 AllSolidityEvents.prototype.attachToContract = function (contract) {
@@ -3329,7 +3329,7 @@ SolidityEvent.prototype.execute = function (indexed, options, callback) {
 
     var o = this.encode(indexed, options);
     var formatter = this.decode.bind(this);
-    return new Filter(this._requestManager, o, watches.eth(), formatter, callback);
+    return new Filter(this._requestManager, o, watches.webchain(), formatter, callback);
 };
 
 /**
@@ -5482,7 +5482,7 @@ Eth.prototype.contract = function (abi) {
 };
 
 Eth.prototype.filter = function (fil, callback) {
-    return new Filter(this._requestManager, fil, watches.eth(), formatters.outputLogFormatter, callback);
+    return new Filter(this._requestManager, fil, watches.webchain(), formatters.outputLogFormatter, callback);
 };
 
 Eth.prototype.namereg = function () {
