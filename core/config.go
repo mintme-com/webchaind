@@ -281,11 +281,15 @@ func (c *ChainConfig) SortForks() *ChainConfig {
 
 // GetChainID gets the chainID for a chainconfig.
 // It returns big.Int zero-value if no chainID is ever set for eip155/chainID.
-// It uses ChainConfig#HasFeature, so it will return the last chronological value
-// if the value is set multiple times.
-func (c *ChainConfig) GetChainID() *big.Int {
+func (c *ChainConfig) GetChainID(num *big.Int) *big.Int {
 	n := new(big.Int)
-	feat, _, ok := c.HasFeature("eip155")
+	var feat *ForkFeature
+	var ok bool
+	if num == nil {
+		feat, _, ok = c.HasFeature("eip155")
+	} else {
+		feat, _, ok = c.GetFeature(num, "eip155")
+	}
 	if !ok {
 		return n
 	}

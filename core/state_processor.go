@@ -71,12 +71,12 @@ func (p *StateProcessor) Process(block *types.Block, statedb *state.StateDB) (ty
 	// Iterate over and process the individual transactions
 	for i, tx := range block.Transactions() {
 		if tx.Protected() {
-			chainId := p.config.GetChainID()
+			chainId := p.config.GetChainID(block.Number())
 			if chainId.Cmp(new(big.Int)) == 0 {
 				return nil, nil, nil, fmt.Errorf("ChainID is not set for EIP-155 in chain configuration at block number: %v. \n  Tx ChainID: %v", block.Number(), tx.ChainId())
 			}
 			if tx.ChainId() == nil || tx.ChainId().Cmp(chainId) != 0 {
-				return nil, nil, nil, fmt.Errorf("Invalid transaction chain id. Current chain id: %v tx chain id: %v", p.config.GetChainID(), tx.ChainId())
+				return nil, nil, nil, fmt.Errorf("Invalid transaction chain id. Current chain id: %v tx chain id: %v", chainId, tx.ChainId())
 			}
 		}
 		statedb.StartRecord(tx.Hash(), block.Hash(), i)

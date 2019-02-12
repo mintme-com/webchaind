@@ -80,7 +80,7 @@ type TxPool struct {
 func NewTxPool(config *ChainConfig, eventMux *event.TypeMux, currentStateFn stateFn, gasLimitFn func() *big.Int) *TxPool {
 	pool := &TxPool{
 		config:       config,
-		signer:       types.NewChainIdSigner(config.GetChainID()),
+		signer:       types.NewChainIdSigner(config.GetChainID(nil)),
 		pending:      make(map[common.Hash]*types.Transaction),
 		queue:        make(map[common.Address]map[common.Hash]*types.Transaction),
 		eventMux:     eventMux,
@@ -110,6 +110,10 @@ func (pool *TxPool) eventLoop() {
 			pool.mu.Lock()
 			if ev.Block != nil && pool.config.IsHomestead(ev.Block.Number()) {
 				pool.homestead = true
+			}
+
+			if ev.Block != nil {
+				pool.signer = types.NewChainIdSigner(pool.config.GetChainID(ev.Block.Number()))
 			}
 
 			pool.resetState()

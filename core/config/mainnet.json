@@ -34,6 +34,19 @@
                         }
                     }
                 ]
+            },
+            {
+                "name": "Hardfork1",
+                "block": 99999999, "// TODO": "insert correct block number",
+                "requiredHash": "0x0000000000000000000000000000000000000000000000000000000000000000",
+                "features": [
+                    {
+                        "id": "eip155",
+                        "options": {
+                            "chainID": 24484
+                        }
+                    }
+                ]
             }
         ],
         "badHashes": [
