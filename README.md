@@ -240,7 +240,9 @@ Thank you for considering to help out with the source code!
 
 The core values of democratic engagement, transparency, and integrity run deep with us. We welcome contributions from everyone, and are grateful for even the smallest of fixes.  :clap:
 
-If you'd like to contribute to webchaind, please fork, fix, commit and send a pull request for the maintainers to review and merge into the main code base.
+This project is migrated from the now hard-forked [Ethereum (ETHF) Github project](https://github.com/ethereum), and we will need to incrementally migrate pieces of the infrastructure required to maintain the project.
+
+If you'd like to contribute to go-ethereum, please fork, fix, commit and send a pull request for the maintainers to review and merge into the main code base. If you wish to submit more complex changes, please check up with the core devs first on [our Discord channel (#development)](https://discord.gg/NgzMPaj) to ensure those changes are in line with the general philosophy of the project and/or get some early feedback which can make both your efforts much lighter as well as our review and merge procedures quick and simple.
 
 Please see the [Wiki](https://github.com/webchain-network/webchaind/wiki) for more details on configuring your environment, managing project dependencies, and testing procedures.
 
