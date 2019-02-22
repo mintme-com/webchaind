@@ -47,6 +47,11 @@
                         }
                     }
                 ]
+            },
+            {
+                "name": "LYRA2",
+                "block": 5, "// TODO": "insert correct block number",
+                "requiredHash": "0x0000000000000000000000000000000000000000000000000000000000000000"
             }
         ],
         "badHashes": [

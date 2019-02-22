@@ -1,7 +1,7 @@
 // Copyright 2015 The go-ethereum Authors
 // Copyright 2015 Lefteris Karapetsas <lefteris@refu.co>
 // Copyright 2015 Matthew Wampler-Doty <matthew.wampler.doty@gmail.com>
-// Copyright 2018 Webchain project
+// Copyright 2018-2019 Webchain project
 // This file is part of Webchain.
 //
 // Webchain is free software: you can redistribute it and/or modify
@@ -19,9 +19,13 @@
 
 package cryptonight
 
+// TODO: Refactor this package. "cryptonight" isn't right place for
+// LYRA2 implementation.
+
 /*
 #cgo amd64 CFLAGS: -maes
 #include "cryptonight.h"
+#include "Lyra2.h"
 #include <stdlib.h>
 */
 import "C"
@@ -48,8 +52,9 @@ var (
 )
 
 type Cryptonight struct {
-	hashRate int32
-	turbo    bool
+	lyra2_height uint64
+	hashRate     int32
+	turbo        bool
 }
 
 func (pow *Cryptonight) GetHashrate() int64 {
@@ -57,6 +62,7 @@ func (pow *Cryptonight) GetHashrate() int64 {
 }
 
 func (pow *Cryptonight) Search(block pow.Block, stop <-chan struct{}, index int) (nonce uint64) {
+	is_lyra2 := block.NumberU64() >= pow.lyra2_height
 	r := rand.New(rand.NewSource(time.Now().UnixNano()))
 	diff := block.Difficulty()
 
@@ -66,13 +72,22 @@ func (pow *Cryptonight) Search(block pow.Block, stop <-chan struct{}, index int)
 
 	nonce = uint64(r.Int63())
 	target := new(big.Int).Div(maxUint256, diff)
-	var ctx unsafe.Pointer = C.cryptonight_create()
+	var ctx unsafe.Pointer
+	if is_lyra2 {
+		ctx = C.LYRA2_create()
+	} else {
+		ctx = C.cryptonight_create()
+	}
 	headerBytes := types.HeaderToBytes(block.Header())
 	for {
 		select {
 		case <-stop:
 			atomic.AddInt32(&pow.hashRate, -previousHashrate)
-			C.cryptonight_destroy(ctx)
+			if is_lyra2 {
+				C.LYRA2_destroy(ctx)
+			} else {
+				C.cryptonight_destroy(ctx)
+			}
 			return 0
 		default:
 			i++
@@ -87,12 +102,21 @@ func (pow *Cryptonight) Search(block pow.Block, stop <-chan struct{}, index int)
 				atomic.AddInt32(&pow.hashRate, hashrateDiff)
 			}
 
-			result := pow.compute(ctx, headerBytes, nonce).Big()
+			var result *big.Int
+			if is_lyra2 {
+				result = pow.computeLYRA2(ctx, headerBytes, nonce).Big()
+			} else {
+				result = pow.compute(ctx, headerBytes, nonce).Big()
+			}
 
 			// TODO: disagrees with the spec https://github.com/ethereum/wiki/wiki/Ethash#mining
 			if result.Cmp(target) <= 0 {
 				atomic.AddInt32(&pow.hashRate, -previousHashrate)
-				C.cryptonight_destroy(ctx)
+				if is_lyra2 {
+					C.LYRA2_destroy(ctx)
+				} else {
+					C.cryptonight_destroy(ctx)
+				}
 				return nonce
 			}
 			nonce += 1
@@ -131,10 +155,34 @@ func (pow *Cryptonight) compute(ctx unsafe.Pointer, blockBytes []byte, nonce uin
 	return hash
 }
 
+func (pow *Cryptonight) computeLYRA2(lyra2_ctx unsafe.Pointer, blockBytes []byte, nonce uint64) common.Hash {
+	binary.BigEndian.PutUint64(blockBytes[len(blockBytes)-8:], nonce)
+
+	var in unsafe.Pointer = C.CBytes(blockBytes)
+	var out unsafe.Pointer = C.malloc(common.HashLength)
+
+	C.LYRA2(lyra2_ctx, unsafe.Pointer(out), common.HashLength, unsafe.Pointer(in), C.int32_t(len(blockBytes)))
+
+	var hash common.Hash = bytesToHash(unsafe.Pointer(out))
+
+	C.free(in)
+	C.free(out)
+
+	return hash
+}
+
 func (pow *Cryptonight) CalcHash(headerBytes []byte, nonce uint64) *big.Int {
-	var ctx unsafe.Pointer = C.cryptonight_create()
-	result := pow.compute(ctx, headerBytes, nonce)
-	C.cryptonight_destroy(ctx)
+	var cn_ctx unsafe.Pointer = C.cryptonight_create()
+	result := pow.compute(cn_ctx, headerBytes, nonce)
+	C.cryptonight_destroy(cn_ctx)
+
+	return result.Big()
+}
+
+func (pow *Cryptonight) CalcHashLYRA2(headerBytes []byte, nonce uint64) *big.Int {
+	var lyra2_ctx unsafe.Pointer = C.LYRA2_create()
+	result := pow.computeLYRA2(lyra2_ctx, headerBytes, nonce)
+	C.LYRA2_destroy(lyra2_ctx)
 
 	return result.Big()
 }
@@ -151,21 +199,26 @@ func (pow *Cryptonight) Verify(block pow.Block) bool {
 		return false
 	}
 
-	result := pow.CalcHash(headerBytes, block.Nonce())
+	var result *big.Int
+	if block.NumberU64() >= pow.lyra2_height {
+		result = pow.CalcHashLYRA2(headerBytes, block.Nonce())
+	} else {
+		result = pow.CalcHash(headerBytes, block.Nonce())
+	}
 
 	// The actual check.
 	target := new(big.Int).Div(maxUint256, difficulty)
 	return result.Cmp(target) <= 0
 }
 
-func New() *Cryptonight {
-	return &Cryptonight{}
+func New(lyra2_height uint64) *Cryptonight {
+	return &Cryptonight{lyra2_height: lyra2_height}
 }
 
-func NewShared() *Cryptonight {
-	return &Cryptonight{}
+func NewShared(lyra2_height uint64) *Cryptonight {
+	return &Cryptonight{lyra2_height: lyra2_height}
 }
 
-func NewForTesting() (*Cryptonight, error) {
-	return &Cryptonight{}, nil
+func NewForTesting(lyra2_height uint64) (*Cryptonight, error) {
+	return &Cryptonight{lyra2_height: lyra2_height}, nil
 }

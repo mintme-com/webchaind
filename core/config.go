@@ -299,6 +299,10 @@ func (c *ChainConfig) GetChainID(num *big.Int) *big.Int {
 	return n
 }
 
+func (c *ChainConfig) GetLYRA2Block() uint64 {
+	return c.ForkByName("LYRA2").Block.Uint64()
+}
+
 // IsHomestead returns whether num is either equal to the homestead block or greater.
 func (c *ChainConfig) IsHomestead(num *big.Int) bool {
 	if c.ForkByName("Homestead").Block == nil || num == nil {
