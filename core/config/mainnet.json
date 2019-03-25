@@ -37,7 +37,7 @@
             },
             {
                 "name": "Hardfork1",
-                "block": 99999999, "// TODO": "insert correct block number",
+                "block": 2022222,
                 "requiredHash": "0x0000000000000000000000000000000000000000000000000000000000000000",
                 "features": [
                     {
@@ -50,7 +50,7 @@
             },
             {
                 "name": "LYRA2",
-                "block": 5, "// TODO": "insert correct block number",
+                "block": 2022222,
                 "requiredHash": "0x0000000000000000000000000000000000000000000000000000000000000000"
             }
         ],
