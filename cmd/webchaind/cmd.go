@@ -859,7 +859,7 @@ func recoverChaindata(ctx *cli.Context) error {
 
 	pow := pow.PoW(core.FakePow{})
 	if !ctx.GlobalBool(aliasableName(FakePoWFlag.Name, ctx)) {
-		pow = cryptonight.New()
+		pow = cryptonight.New(sconf.ChainConfig.GetLYRA2Block())
 	} else {
 		glog.V(logger.Warn).Info("Consensus: fake")
 	}

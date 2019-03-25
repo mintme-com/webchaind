@@ -47,6 +47,7 @@ package main
 
 import (
 	"fmt"
+	"math/big"
 	"time"
 
 	"github.com/webchain-network/webchaind/core"
@@ -95,7 +96,7 @@ func tuiDrawDash(e *eth.Ethereum) {
 	}
 	if e != nil && e.IsListening() {
 		cb := e.BlockChain().GetBlockByNumber(currentBlockNumber)
-		cid := e.ChainConfig().GetChainID()
+		cid := e.ChainConfig().GetChainID(new(big.Int).SetUint64(currentBlockNumber))
 		cnet := e.NetVersion()
 		cname := ""
 		if id := core.GetCacheChainIdentity(); id != "" {

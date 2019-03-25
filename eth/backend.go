@@ -150,9 +150,9 @@ func New(ctx *node.ServiceContext, config *Config) (*Ethereum, error) {
 		return nil, err
 	}
 
-	glog.V(logger.Info).Infof("Protocol Versions: %v, Network Id: %v, Chain Id: %v", ProtocolVersions, config.NetworkId, config.ChainConfig.GetChainID())
+	glog.V(logger.Info).Infof("Protocol Versions: %v, Network Id: %v, Chain Id: %v", ProtocolVersions, config.NetworkId, config.ChainConfig.GetChainID(nil))
 	glog.D(logger.Warn).Infof("Protocol Versions: %v, Network Id: %v, Chain Id: %v", logger.ColorGreen(fmt.Sprintf("%v", ProtocolVersions)), logger.ColorGreen(strconv.Itoa(config.NetworkId)), logger.ColorGreen(func() string {
-		cid := config.ChainConfig.GetChainID().String()
+		cid := config.ChainConfig.GetChainID(nil).String()
 		if cid == "0" {
 			cid = "not set"
 		}
@@ -211,16 +211,16 @@ func New(ctx *node.ServiceContext, config *Config) (*Ethereum, error) {
 	switch {
 	case config.PowTest:
 		glog.V(logger.Info).Infof("Consensus: cryptonight used in test mode")
-		eth.pow, err = cryptonight.NewForTesting()
+		eth.pow, err = cryptonight.NewForTesting(config.ChainConfig.GetLYRA2Block())
 		if err != nil {
 			return nil, err
 		}
 	case config.PowShared:
 		glog.V(logger.Info).Infof("Consensus: cryptonight used in shared mode")
-		eth.pow = cryptonight.NewShared()
+		eth.pow = cryptonight.NewShared(config.ChainConfig.GetLYRA2Block())
 
 	default:
-		eth.pow = cryptonight.New()
+		eth.pow = cryptonight.New(config.ChainConfig.GetLYRA2Block())
 	}
 
 	// Initialize indexes db if enabled

@@ -833,7 +833,7 @@ func MakeChain(ctx *cli.Context) (chain *core.BlockChain, chainDb ethdb.Database
 
 	pow := pow.PoW(core.FakePow{})
 	if !ctx.GlobalBool(aliasableName(FakePoWFlag.Name, ctx)) {
-		pow = cryptonight.New()
+		pow = cryptonight.New(sconf.ChainConfig.GetLYRA2Block())
 	} else {
 		glog.V(logger.Info).Infoln("Consensus: fake")
 		glog.D(logger.Warn).Warnln("Consensus: fake")

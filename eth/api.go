@@ -184,7 +184,8 @@ func (s *PublicEthereumAPI) Syncing() (interface{}, error) {
 // 61 - Mainnet $((0x3d))
 // 62 - Morden $((0x3e))
 func (s *PublicEthereumAPI) ChainId() *big.Int {
-	return s.e.chainConfig.GetChainID()
+	_, current, _, _, _ := s.e.Downloader().Progress()
+	return s.e.chainConfig.GetChainID(new(big.Int).SetUint64(current))
 }
 
 // PublicMinerAPI provides an API to control the miner.
@@ -848,7 +849,7 @@ func (s *PublicBlockChainAPI) rpcOutputBlock(b *types.Block, inclTx bool, fullTx
 		if fullTx {
 			formatTx = func(tx *types.Transaction) (interface{}, error) {
 				if tx.Protected() {
-					tx.SetSigner(types.NewChainIdSigner(s.bc.Config().GetChainID()))
+					tx.SetSigner(types.NewChainIdSigner(s.bc.Config().GetChainID(b.Number())))
 				}
 				return newRPCTransaction(b, tx.Hash())
 			}

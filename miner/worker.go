@@ -368,7 +368,7 @@ func (self *worker) makeCurrent(parent *types.Block, header *types.Header) error
 	}
 	work := &Work{
 		config:    self.config,
-		signer:    types.NewChainIdSigner(self.config.GetChainID()),
+		signer:    types.NewChainIdSigner(self.config.GetChainID(header.Number)),
 		state:     state,
 		ancestors: set.New(),
 		family:    set.New(),
