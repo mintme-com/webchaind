@@ -27,11 +27,12 @@ type cache struct {
 
 // Augment processes source files to improve calls to be more descriptive.
 //
-// It modifies goroutines in place.
-func Augment(goroutines []Goroutine) {
+// It modifies goroutines in place. It requires calling ParseDump() with
+// guesspaths set to true to work properly.
+func Augment(goroutines []*Goroutine) {
 	c := &cache{}
-	for i := range goroutines {
-		c.augmentGoroutine(&goroutines[i])
+	for _, g := range goroutines {
+		c.augmentGoroutine(g)
 	}
 }
 
@@ -49,7 +50,7 @@ func (c *cache) augmentGoroutine(goroutine *Goroutine) {
 	// For each call site, look at the next call and populate it. Then we can
 	// walk back and reformat things.
 	for i := range goroutine.Stack.Calls {
-		c.load(goroutine.Stack.Calls[i].SourcePath)
+		c.load(goroutine.Stack.Calls[i].LocalSrcPath)
 	}
 
 	// Once all loaded, we can look at the next call when available.
@@ -101,7 +102,7 @@ func (c *cache) load(fileName string) {
 }
 
 func (c *cache) getFuncAST(call *Call) *ast.FuncDecl {
-	if p := c.parsed[call.SourcePath]; p != nil {
+	if p := c.parsed[call.LocalSrcPath]; p != nil {
 		return p.getFuncAST(call.Func.Name(), call.Line)
 	}
 	return nil

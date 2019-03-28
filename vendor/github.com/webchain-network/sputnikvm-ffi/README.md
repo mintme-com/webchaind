@@ -20,7 +20,7 @@ interact with it. You can find the generated documentation file for
 Import the `sputnikvm` library to your application:
 
 ```
-import "github.com/ethereumproject/sputnikvm-ffi/go/sputnikvm"
+import "github.com/webchain-network/sputnikvm-ffi/go/sputnikvm"
 ```
 
 Build a static library for the C FFI, which will give you an

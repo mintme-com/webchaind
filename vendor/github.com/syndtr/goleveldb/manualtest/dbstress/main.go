@@ -426,8 +426,9 @@ func main() {
 			aliveiters, _ := db.GetProperty("leveldb.aliveiters")
 			blockpool, _ := db.GetProperty("leveldb.blockpool")
 			writeDelay, _ := db.GetProperty("leveldb.writedelay")
-			log.Printf("> BlockCache=%s OpenedTables=%s AliveSnaps=%s AliveIter=%s BlockPool=%q WriteDelay=%q",
-				cachedblock, openedtables, alivesnaps, aliveiters, blockpool, writeDelay)
+			ioStats, _ := db.GetProperty("leveldb.iostats")
+			log.Printf("> BlockCache=%s OpenedTables=%s AliveSnaps=%s AliveIter=%s BlockPool=%q WriteDelay=%q IOStats=%q",
+				cachedblock, openedtables, alivesnaps, aliveiters, blockpool, writeDelay, ioStats)
 			log.Print("------------------------")
 		}
 	}()
@@ -525,7 +526,7 @@ func main() {
 								getStat.record(1)
 
 								if checksum0, checksum1 := dataChecksum(v2); checksum0 != checksum1 {
-									err := &errors.ErrCorrupted{Fd: storage.FileDesc{0xff, 0}, Err: fmt.Errorf("v2: %x: checksum mismatch: %v vs %v", v2, checksum0, checksum1)}
+									err := &errors.ErrCorrupted{Fd: storage.FileDesc{Type: 0xff, Num: 0}, Err: fmt.Errorf("v2: %x: checksum mismatch: %v vs %v", v2, checksum0, checksum1)}
 									fatalf(err, "[%02d] READER #%d.%d K%d snap.Get: %v\nk1: %x\n -> k2: %x", ns, snapwi, ri, n, err, k1, k2)
 								}
 

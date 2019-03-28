@@ -40,6 +40,7 @@ const (
 	f11
 	f12
 	altB
+	altBs // Alt+Backspace
 	altD
 	altF
 	altY
@@ -113,6 +114,10 @@ func (s *State) refreshSingleLine(prompt []rune, buf []rune, pos int) error {
 
 	pLen := countGlyphs(prompt)
 	bLen := countGlyphs(buf)
+	// on some OS / terminals extra column is needed to place the cursor char
+	if cursorColumn {
+		bLen++
+	}
 	pos = countGlyphs(buf[:pos])
 	if pLen+bLen < s.columns {
 		_, err = fmt.Print(string(buf))
@@ -163,6 +168,14 @@ func (s *State) refreshSingleLine(prompt []rune, buf []rune, pos int) error {
 func (s *State) refreshMultiLine(prompt []rune, buf []rune, pos int) error {
 	promptColumns := countMultiLineGlyphs(prompt, s.columns, 0)
 	totalColumns := countMultiLineGlyphs(buf, s.columns, promptColumns)
+	// on some OS / terminals extra column is needed to place the cursor char
+	// if cursorColumn {
+	//	totalColumns++
+	// }
+
+	// it looks like Multiline mode always assume that a cursor need an extra column,
+	// and always emit a newline if we are at the screen end, so no worarounds needed there
+
 	totalRows := (totalColumns + s.columns - 1) / s.columns
 	maxRows := s.maxRows
 	if totalRows > s.maxRows {
@@ -584,7 +597,7 @@ func (s *State) Prompt(prompt string) (string, error) {
 
 // PromptWithSuggestion displays prompt and an editable text with cursor at
 // given position. The cursor will be set to the end of the line if given position
-// is negative or greater than length of text. Returns a line of user input, not
+// is negative or greater than length of text (in runes). Returns a line of user input, not
 // including a trailing newline character. An io.EOF error is returned if the user
 // signals end-of-file by pressing Ctrl-D.
 func (s *State) PromptWithSuggestion(prompt string, text string, pos int) (string, error) {
@@ -619,8 +632,8 @@ func (s *State) PromptWithSuggestion(prompt string, text string, pos int) (strin
 
 	defer s.stopPrompt()
 
-	if pos < 0 || len(text) < pos {
-		pos = len(text)
+	if pos < 0 || len(line) < pos {
+		pos = len(line)
 	}
 	if len(line) > 0 {
 		err := s.refresh(p, line, pos)
@@ -800,42 +813,7 @@ mainLoop:
 				pos = 0
 				s.needRefresh = true
 			case ctrlW: // Erase word
-				if pos == 0 {
-					fmt.Print(beep)
-					break
-				}
-				// Remove whitespace to the left
-				var buf []rune // Store the deleted chars in a buffer
-				for {
-					if pos == 0 || !unicode.IsSpace(line[pos-1]) {
-						break
-					}
-					buf = append(buf, line[pos-1])
-					line = append(line[:pos-1], line[pos:]...)
-					pos--
-				}
-				// Remove non-whitespace to the left
-				for {
-					if pos == 0 || unicode.IsSpace(line[pos-1]) {
-						break
-					}
-					buf = append(buf, line[pos-1])
-					line = append(line[:pos-1], line[pos:]...)
-					pos--
-				}
-				// Invert the buffer and save the result on the killRing
-				var newBuf []rune
-				for i := len(buf) - 1; i >= 0; i-- {
-					newBuf = append(newBuf, buf[i])
-				}
-				if killAction > 0 {
-					s.addToKillRing(newBuf, 2) // Add in prepend mode
-				} else {
-					s.addToKillRing(newBuf, 0) // Add in normal mode
-				}
-				killAction = 2 // Mark that there was some killing
-
-				s.needRefresh = true
+				pos, line, killAction = s.eraseWord(pos, line, killAction)
 			case ctrlY: // Paste from Yank buffer
 				line, pos, next, err = s.yank(p, line, pos)
 				goto haveNext
@@ -999,6 +977,8 @@ mainLoop:
 					s.addToKillRing(buf, 0) // Add in normal mode
 				}
 				killAction = 2 // Mark that there was some killing
+			case altBs: // Erase word
+				pos, line, killAction = s.eraseWord(pos, line, killAction)
 			case winch: // Window change
 				if s.multiLineMode {
 					if s.maxRows-s.cursorRows > 0 {
@@ -1156,4 +1136,44 @@ func (s *State) tooNarrow(prompt string) (string, error) {
 		defer func() { s.r = nil }()
 	}
 	return s.promptUnsupported(prompt)
+}
+
+func (s *State) eraseWord(pos int, line []rune, killAction int) (int, []rune, int) {
+	if pos == 0 {
+		fmt.Print(beep)
+		return pos, line, killAction
+	}
+	// Remove whitespace to the left
+	var buf []rune // Store the deleted chars in a buffer
+	for {
+		if pos == 0 || !unicode.IsSpace(line[pos-1]) {
+			break
+		}
+		buf = append(buf, line[pos-1])
+		line = append(line[:pos-1], line[pos:]...)
+		pos--
+	}
+	// Remove non-whitespace to the left
+	for {
+		if pos == 0 || unicode.IsSpace(line[pos-1]) {
+			break
+		}
+		buf = append(buf, line[pos-1])
+		line = append(line[:pos-1], line[pos:]...)
+		pos--
+	}
+	// Invert the buffer and save the result on the killRing
+	var newBuf []rune
+	for i := len(buf) - 1; i >= 0; i-- {
+		newBuf = append(newBuf, buf[i])
+	}
+	if killAction > 0 {
+		s.addToKillRing(newBuf, 2) // Add in prepend mode
+	} else {
+		s.addToKillRing(newBuf, 0) // Add in normal mode
+	}
+	killAction = 2 // Mark that there was some killing
+
+	s.needRefresh = true
+	return pos, line, killAction
 }

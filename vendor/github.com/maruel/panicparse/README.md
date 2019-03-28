@@ -6,6 +6,7 @@ stack traces. Helps debugging crashes and deadlocks in heavily parallelized
 process.
 
 [![Build Status](https://travis-ci.org/maruel/panicparse.svg?branch=master)](https://travis-ci.org/maruel/panicparse)
+[![Go Report Card](https://goreportcard.com/badge/github.com/maruel/panicparse)](https://goreportcard.com/report/github.com/maruel/panicparse)
 
 panicparse helps make sense of Go crash dumps:
 
@@ -23,8 +24,9 @@ Features
    * Pushes stdlib-only stacks at the bottom to help focus on important code.
    * Usable as a library!
      [![GoDoc](https://godoc.org/github.com/maruel/panicparse/stack?status.svg)](https://godoc.org/github.com/maruel/panicparse/stack)
-     * Warning: please pin the version (e.g. vendor it). Breaking changes are
-       not planned but may happen.
+     * Warning: please pin the major version (i.e. vendor it via
+       [dep](https://github.com/golang/dep)) as breaking changes happen on
+       [major version update](https://semver.org/).
    * Parses the source files if available to augment the output.
    * Works on Windows.
 
