@@ -55,7 +55,7 @@ cmd/disasm: ## Build a local snapshot of disasm.
 	@echo "Run \"$(BINARY)/disasm\" to launch disasm."
 
 cmd/ethtest: ## Build a local snapshot of ethtest.
-	mkdir -p ./${BINARY} && go build ${LDFLAGS} -o ${BINARY}/ethtest ./cmd/ethtest
+	mkdir -p ./${BINARY} && CGO_CFLAGS_ALLOW='-maes.*' go build ${LDFLAGS} -o ${BINARY}/ethtest ./cmd/ethtest
 	@echo "Done building ethtest."
 	@echo "Run \"$(BINARY)/ethtest\" to launch ethtest."
 

@@ -176,7 +176,7 @@ func runBlockTest(homesteadBlock, gasPriceFork *big.Int, test *BlockTest) error 
 		core.DefaultConfigMainnet.ChainConfig.ForkByName("GasReprice").Block = gasPriceFork
 	}
 
-	chain, err := core.NewBlockChain(db, core.DefaultConfigMainnet.ChainConfig, cryptonight.NewShared(), evmux)
+	chain, err := core.NewBlockChain(db, core.DefaultConfigMainnet.ChainConfig, cryptonight.NewShared(core.DefaultConfigMainnet.ChainConfig.GetLYRA2Block()), evmux)
 	if err != nil {
 		return err
 	}
