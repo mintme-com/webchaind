@@ -4,7 +4,7 @@
     "state": {
         "startingNonce": 1048576
     },
-    "network": 2,
+    "network": 37130,
     "consensus": "cryptonight",
     "genesis": {
         "nonce": "0x0000000000000041",
@@ -33,18 +33,22 @@
                 ]
             },
             {
-                "name": "Gotham",
-                "block": 5000000,
+                "name": "Hardfork1",
+                "block": 10,
                 "requiredHash": "0x0000000000000000000000000000000000000000000000000000000000000000",
                 "features": [
                     {
-                        "id": "reward",
+                        "id": "eip155",
                         "options": {
-                            "era": 5000000,
-                            "type": "ecip1017"
+                            "chainID": 24485
                         }
                     }
                 ]
+            },
+            {
+                "name": "LYRA2",
+                "block": 10,
+                "requiredHash": "0x0000000000000000000000000000000000000000000000000000000000000000"
             }
         ],
         "badHashes": [
