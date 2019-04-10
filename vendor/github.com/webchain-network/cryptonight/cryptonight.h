@@ -65,7 +65,7 @@ void cryptonight_hash_aesni(void *ctx, const char* input, char* output, uint32_t
 void *cryptonight_create(void);
 void cryptonight_destroy(void *ctx);
 
-void (* const extra_hashes[4])(const void *, size_t, char *);
+extern void (* const extra_hashes[4])(const void *, size_t, char *);
 
 #ifdef __cplusplus
 }
