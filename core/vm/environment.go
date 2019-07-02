@@ -27,6 +27,7 @@ import (
 type RuleSet interface {
 	IsHomestead(*big.Int) bool
 	IsAtlantis(*big.Int) bool
+	IsHardfork2(*big.Int) bool
 	// GasTable returns the gas prices for this phase, which is based on
 	// block number passed in.
 	GasTable(*big.Int) *GasTable

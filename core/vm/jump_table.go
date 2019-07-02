@@ -36,15 +36,12 @@ func newJumpTable(ruleset RuleSet, blockNumber *big.Int) vmJumpTable {
 
 	// when initialising a new VM execution we must first check the homestead
 	// changes.
-	if ruleset.IsHomestead(blockNumber) {
+	if ruleset.IsHardfork2(blockNumber) {
 		jumpTable[DELEGATECALL] = jumpPtr{
 			fn:      opDelegateCall,
 			valid:   true,
 			returns: true,
 		}
-	}
-
-	if ruleset.IsAtlantis(blockNumber) {
 		jumpTable[REVERT] = jumpPtr{
 			fn:      opRevert,
 			valid:   true,

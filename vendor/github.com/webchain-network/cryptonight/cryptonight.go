@@ -52,9 +52,10 @@ var (
 )
 
 type Cryptonight struct {
-	lyra2_height uint64
-	hashRate     int32
-	turbo        bool
+	lyra2_height   uint64
+	lyra2v2_height uint64
+	hashRate       int32
+	turbo          bool
 }
 
 func (pow *Cryptonight) GetHashrate() int64 {
@@ -63,6 +64,7 @@ func (pow *Cryptonight) GetHashrate() int64 {
 
 func (pow *Cryptonight) Search(block pow.Block, stop <-chan struct{}, index int) (nonce uint64) {
 	is_lyra2 := block.NumberU64() >= pow.lyra2_height
+	is_lyra2v2 := block.NumberU64() >= pow.lyra2v2_height
 	r := rand.New(rand.NewSource(time.Now().UnixNano()))
 	diff := block.Difficulty()
 
@@ -104,7 +106,11 @@ func (pow *Cryptonight) Search(block pow.Block, stop <-chan struct{}, index int)
 
 			var result *big.Int
 			if is_lyra2 {
-				result = pow.computeLYRA2(ctx, headerBytes, nonce).Big()
+				tcost := 4
+				if is_lyra2v2 {
+					tcost = 1
+				}
+				result = pow.computeLYRA2(ctx, headerBytes, nonce, tcost).Big()
 			} else {
 				result = pow.compute(ctx, headerBytes, nonce).Big()
 			}
@@ -155,13 +161,13 @@ func (pow *Cryptonight) compute(ctx unsafe.Pointer, blockBytes []byte, nonce uin
 	return hash
 }
 
-func (pow *Cryptonight) computeLYRA2(lyra2_ctx unsafe.Pointer, blockBytes []byte, nonce uint64) common.Hash {
+func (pow *Cryptonight) computeLYRA2(lyra2_ctx unsafe.Pointer, blockBytes []byte, nonce uint64, tcost int) common.Hash {
 	binary.BigEndian.PutUint64(blockBytes[len(blockBytes)-8:], nonce)
 
 	var in unsafe.Pointer = C.CBytes(blockBytes)
 	var out unsafe.Pointer = C.malloc(common.HashLength)
 
-	C.LYRA2(lyra2_ctx, unsafe.Pointer(out), common.HashLength, unsafe.Pointer(in), C.int32_t(len(blockBytes)))
+	C.LYRA2(lyra2_ctx, unsafe.Pointer(out), common.HashLength, unsafe.Pointer(in), C.int32_t(len(blockBytes)), C.int32_t(tcost))
 
 	var hash common.Hash = bytesToHash(unsafe.Pointer(out))
 
@@ -179,9 +185,9 @@ func (pow *Cryptonight) CalcHash(headerBytes []byte, nonce uint64) *big.Int {
 	return result.Big()
 }
 
-func (pow *Cryptonight) CalcHashLYRA2(headerBytes []byte, nonce uint64) *big.Int {
+func (pow *Cryptonight) CalcHashLYRA2(headerBytes []byte, nonce uint64, tcost int) *big.Int {
 	var lyra2_ctx unsafe.Pointer = C.LYRA2_create()
-	result := pow.computeLYRA2(lyra2_ctx, headerBytes, nonce)
+	result := pow.computeLYRA2(lyra2_ctx, headerBytes, nonce, tcost)
 	C.LYRA2_destroy(lyra2_ctx)
 
 	return result.Big()
@@ -201,7 +207,11 @@ func (pow *Cryptonight) Verify(block pow.Block) bool {
 
 	var result *big.Int
 	if block.NumberU64() >= pow.lyra2_height {
-		result = pow.CalcHashLYRA2(headerBytes, block.Nonce())
+		tcost := 4
+		if block.NumberU64() >= pow.lyra2v2_height {
+			tcost = 1
+		}
+		result = pow.CalcHashLYRA2(headerBytes, block.Nonce(), tcost)
 	} else {
 		result = pow.CalcHash(headerBytes, block.Nonce())
 	}
@@ -211,14 +221,23 @@ func (pow *Cryptonight) Verify(block pow.Block) bool {
 	return result.Cmp(target) <= 0
 }
 
-func New(lyra2_height uint64) *Cryptonight {
-	return &Cryptonight{lyra2_height: lyra2_height}
+func New(lyra2_height uint64, lyra2v2_height uint64) *Cryptonight {
+	return &Cryptonight{
+		lyra2_height: lyra2_height,
+		lyra2v2_height: lyra2v2_height,
+	}
 }
 
-func NewShared(lyra2_height uint64) *Cryptonight {
-	return &Cryptonight{lyra2_height: lyra2_height}
+func NewShared(lyra2_height uint64, lyra2v2_height uint64) *Cryptonight {
+	return &Cryptonight{
+		lyra2_height: lyra2_height,
+		lyra2v2_height: lyra2v2_height,
+	}
 }
 
-func NewForTesting(lyra2_height uint64) (*Cryptonight, error) {
-	return &Cryptonight{lyra2_height: lyra2_height}, nil
+func NewForTesting(lyra2_height uint64, lyra2v2_height uint64) (*Cryptonight, error) {
+	return &Cryptonight{
+		lyra2_height: lyra2_height,
+		lyra2v2_height: lyra2v2_height,
+	}, nil
 }
