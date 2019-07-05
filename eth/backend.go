@@ -211,16 +211,16 @@ func New(ctx *node.ServiceContext, config *Config) (*Ethereum, error) {
 	switch {
 	case config.PowTest:
 		glog.V(logger.Info).Infof("Consensus: cryptonight used in test mode")
-		eth.pow, err = cryptonight.NewForTesting(config.ChainConfig.GetLYRA2Block())
+		eth.pow, err = cryptonight.NewForTesting(config.ChainConfig.GetLYRA2Block(), config.ChainConfig.GetLYRA2v2Block())
 		if err != nil {
 			return nil, err
 		}
 	case config.PowShared:
 		glog.V(logger.Info).Infof("Consensus: cryptonight used in shared mode")
-		eth.pow = cryptonight.NewShared(config.ChainConfig.GetLYRA2Block())
+		eth.pow = cryptonight.NewShared(config.ChainConfig.GetLYRA2Block(), config.ChainConfig.GetLYRA2v2Block())
 
 	default:
-		eth.pow = cryptonight.New(config.ChainConfig.GetLYRA2Block())
+		eth.pow = cryptonight.New(config.ChainConfig.GetLYRA2Block(), config.ChainConfig.GetLYRA2v2Block())
 	}
 
 	// Initialize indexes db if enabled
