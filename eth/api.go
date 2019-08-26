@@ -545,14 +545,14 @@ type PublicBlockChainAPI struct {
 // NewPublicBlockChainAPI creates a new Etheruem blockchain API.
 func NewPublicBlockChainAPI(config *core.ChainConfig, bc *core.BlockChain, m *miner.Miner, chainDb ethdb.Database, gpo *GasPriceOracle, eventMux *event.TypeMux, am *accounts.Manager) *PublicBlockChainAPI {
 	api := &PublicBlockChainAPI{
-		config:   config,
-		bc:       bc,
-		miner:    m,
-		chainDb:  chainDb,
-		eventMux: eventMux,
-		am:       am,
+		config:                config,
+		bc:                    bc,
+		miner:                 m,
+		chainDb:               chainDb,
+		eventMux:              eventMux,
+		am:                    am,
 		newBlockSubscriptions: make(map[string]func(core.ChainEvent) error),
-		gpo: gpo,
+		gpo:                   gpo,
 	}
 
 	go api.subscriptionLoop()
@@ -1732,7 +1732,7 @@ func (api *PublicGethAPI) GetAddressTransactions(address common.Address, blockSt
 	if atxi == nil {
 		return nil, errors.New("addr-tx indexing not enabled")
 	}
-	// Use human-friendly abbreviations, per https://github.com/ethereumproject/go-ethereum/pull/475#issuecomment-366065122
+	// Use human-friendly abbreviations, per https://github.com/eth-classic/go-ethereum/pull/475#issuecomment-366065122
 	// so 't' => to, 'f' => from, 'tf|ft' => either/both. Same pattern for txKindOf.
 	// _t_o OR _f_rom
 	if toOrFrom == "tf" || toOrFrom == "ft" {
@@ -1881,7 +1881,7 @@ func (api *PublicDebugAPI) SetHead(number uint64) (bool, error) {
 }
 
 // Metrics return all available registered metrics for the client.
-// See https://github.com/ethereumproject/go-ethereum/wiki/Metrics-and-Monitoring for prophetic documentation.
+// See https://github.com/eth-classic/go-ethereum/wiki/Metrics-and-Monitoring for prophetic documentation.
 func (api *PublicDebugAPI) Metrics(raw bool) (map[string]interface{}, error) {
 
 	// Create a rate formatter
@@ -2117,7 +2117,7 @@ func (s *PublicDebugAPI) computeTxEnv(blockHash common.Hash, txIndex int) (core.
 		if err != nil {
 			return nil, nil, fmt.Errorf("tx %x failed: %v", tx.Hash(), err)
 		}
-		statedb.DeleteSuicides()
+		statedb.Finalise(true)
 	}
 	return nil, nil, fmt.Errorf("tx index %d out of range for block %x", txIndex, blockHash)
 }

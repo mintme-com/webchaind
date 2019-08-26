@@ -143,7 +143,7 @@ func (v *BlockValidator) ValidateState(block, parent *types.Block, statedb *stat
 	}
 	// Validate the state root against the received state root and throw
 	// an error if they don't match.
-	if root := statedb.IntermediateRoot(false); header.Root != root {
+	if root := statedb.IntermediateRoot(v.config.IsAtlantis(header.Number)); header.Root != root {
 		return fmt.Errorf("invalid merkle root: header=%x computed=%x", header.Root, root)
 	}
 	return nil
@@ -236,7 +236,7 @@ func ValidateHeader(config *ChainConfig, pow pow.PoW, header *types.Header, pare
 		return BlockEqualTSErr
 	}
 
-	expd := CalcDifficulty(config, header.Time.Uint64(), parent.Time.Uint64(), parent.Number, parent.Difficulty)
+	expd := CalcDifficulty(config, header.Time.Uint64(), parent)
 	if expd.Cmp(header.Difficulty) != 0 {
 		return fmt.Errorf("Difficulty check failed for header %v != %v at %v", header.Difficulty, expd, header.Number)
 	}
@@ -269,7 +269,11 @@ func ValidateHeader(config *ChainConfig, pow pow.PoW, header *types.Header, pare
 // CalcDifficulty is the difficulty adjustment algorithm. It returns
 // the difficulty that a new block should have when created at time
 // given the parent block's time and difficulty.
-func CalcDifficulty(config *ChainConfig, time, parentTime uint64, parentNumber, parentDiff *big.Int) *big.Int {
+func CalcDifficulty(config *ChainConfig, time uint64, parent *types.Header) *big.Int {
+	parentTime := parent.Time.Uint64()
+	parentNumber := parent.Number
+	parentDiff := parent.Difficulty
+
 	if config == nil {
 		glog.Fatalln("missing chain configuration, cannot calculate difficulty")
 	}
@@ -287,6 +291,8 @@ func CalcDifficulty(config *ChainConfig, time, parentTime uint64, parentNumber, 
 		name = ""
 	} // will fall to default panic
 	switch name {
+	case "atlantis":
+		return calcDifficultyAtlantis(time, parent)
 	case "defused":
 		return calcDifficultyDefused(time, parentTime, parentNumber, parentDiff)
 	default:

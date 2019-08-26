@@ -113,7 +113,7 @@ type StateConfig struct {
 }
 
 // GenesisDump is the geth JSON format.
-// https://github.com/ethereumproject/wiki/wiki/Ethereum-Chain-Spec-Format#subformat-genesis
+// https://github.com/eth-classic/wiki/wiki/Ethereum-Chain-Spec-Format#subformat-genesis
 type GenesisDump struct {
 	Nonce      prefixedHex `json:"nonce"`
 	Timestamp  prefixedHex `json:"timestamp"`
@@ -352,7 +352,7 @@ func (c *ChainConfig) IsHardfork2(num *big.Int) bool {
 }
 
 // IsAtlantis returns true if num is greater than atlantic config block
-func (c *ChainConfig) IsAtlantis(num *big.Int) bool {
+func (c *ChainConfig) IsAtlantis(num *big.Int) bool { // TODO: ??
 	return c.IsHardfork2(num)
 }
 

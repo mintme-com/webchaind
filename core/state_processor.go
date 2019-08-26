@@ -83,7 +83,7 @@ func (p *StateProcessor) Process(block *types.Block, statedb *state.StateDB) (ty
 		if UseSputnikVM != "true" {
 			receipt, logs, _, err := ApplyTransaction(p.config, p.bc, gp, statedb, header, tx, totalUsedGas)
 			if err != nil {
-				return nil, nil, totalUsedGas, err
+				return nil, nil, nil, err
 			}
 			receipts = append(receipts, receipt)
 			allLogs = append(allLogs, logs...)
@@ -91,7 +91,7 @@ func (p *StateProcessor) Process(block *types.Block, statedb *state.StateDB) (ty
 		}
 		receipt, logs, _, err := ApplyMultiVmTransaction(p.config, p.bc, gp, statedb, header, tx, totalUsedGas)
 		if err != nil {
-			return nil, nil, totalUsedGas, err
+			return nil, nil, nil, err
 		}
 		receipts = append(receipts, receipt)
 		allLogs = append(allLogs, logs...)
@@ -115,8 +115,15 @@ func ApplyTransaction(config *ChainConfig, bc *BlockChain, gp *GasPool, statedb 
 	}
 
 	// Update the state with pending changes
+	var root []byte
+	if config.IsAtlantis(header.Number) {
+		statedb.Finalise(true)
+	} else {
+		root = statedb.IntermediateRoot(config.IsAtlantis(header.Number)).Bytes()
+	}
+
 	usedGas.Add(usedGas, gas)
-	receipt := types.NewReceipt(statedb.IntermediateRoot(false).Bytes(), usedGas)
+	receipt := types.NewReceipt(root, usedGas)
 	receipt.TxHash = tx.Hash()
 	receipt.GasUsed = new(big.Int).Set(gas)
 	if MessageCreatesContract(tx) {

@@ -163,7 +163,8 @@ func run(ctx *cli.Context) error {
 	vmdone := time.Since(tstart)
 
 	if ctx.GlobalBool(DumpFlag.Name) {
-		statedb.CommitTo(db, false)
+		statedb.IntermediateRoot(true)
+		statedb.CommitTo(db, true)
 		fmt.Println(string(statedb.Dump([]common.Address{})))
 	}
 
@@ -202,9 +203,10 @@ type VMEnv struct {
 	transactor *common.Address
 	value      *big.Int
 
-	depth int
-	Gas   *big.Int
-	time  *big.Int
+	depth      int
+	returnData []byte
+	Gas        *big.Int
+	time       *big.Int
 
 	evm *vm.EVM
 }
@@ -225,6 +227,11 @@ func NewEnv(state *state.StateDB, transactor common.Address, value *big.Int) *VM
 type ruleSet struct{}
 
 func (ruleSet) IsHomestead(*big.Int) bool { return true }
+
+func (ruleSet) IsAtlantis(*big.Int) bool {
+	// Default true for tests
+	return true
+}
 
 func (ruleSet) GasTable(*big.Int) *vm.GasTable {
 	return &vm.GasTable{
@@ -255,6 +262,8 @@ func (self *VMEnv) GasLimit() *big.Int        { return big.NewInt(1000000000) }
 func (self *VMEnv) VmType() vm.Type           { return vm.StdVmTy }
 func (self *VMEnv) Depth() int                { return 0 }
 func (self *VMEnv) SetDepth(i int)            { self.depth = i }
+func (self *VMEnv) ReturnData() []byte        { return self.returnData }
+func (self *VMEnv) SetReturnData(data []byte) { self.returnData = data }
 func (self *VMEnv) GetHash(n uint64) common.Hash {
 	if self.block.Number().Cmp(big.NewInt(int64(n))) == 0 {
 		return self.block.Hash()
@@ -282,6 +291,10 @@ func (self *VMEnv) CallCode(caller vm.ContractRef, addr common.Address, data []b
 
 func (self *VMEnv) DelegateCall(caller vm.ContractRef, addr common.Address, data []byte, gas, price *big.Int) ([]byte, error) {
 	return core.DelegateCall(self, caller, addr, data, gas, price)
+}
+
+func (self *VMEnv) StaticCall(caller vm.ContractRef, addr common.Address, data []byte, gas, price *big.Int) ([]byte, error) {
+	return core.StaticCall(self, caller, addr, data, gas, price)
 }
 
 func (self *VMEnv) Create(caller vm.ContractRef, data []byte, gas, price, value *big.Int) ([]byte, common.Address, error) {

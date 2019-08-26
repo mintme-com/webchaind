@@ -351,6 +351,12 @@ func TestCalcDifficulty1Mainnet(t *testing.T) {
 		t.Error("missing Defuse Difficulty Bomb fork block")
 	}
 
+	// Atlantis
+	atlantisBlock := config.ForkByName("Atlantis").Block
+	if atlantisBlock == nil {
+		t.Error("missing Atlantis fork block")
+	}
+
 	defuseFeat, _, defuseConfigured := config.GetFeature(defuseBlock, "difficulty")
 	if !defuseConfigured {
 		t.Errorf("difficulty not configured for Defuse Difficulty Bomb block: %v", dhB)
@@ -392,11 +398,21 @@ func TestCalcDifficulty1Mainnet(t *testing.T) {
 		new(big.Int).Add(defuseBlock, big.NewInt(0)):  calcDifficultyDefused(time, parentTime, new(big.Int).Add(defuseBlock, big.NewInt(0)), parentDiff),
 		new(big.Int).Add(defuseBlock, big.NewInt(1)):  calcDifficultyDefused(time, parentTime, new(big.Int).Add(defuseBlock, big.NewInt(1)), parentDiff),
 
-		big.NewInt(10000000): calcDifficultyDefused(time, parentTime, big.NewInt(10000000), parentDiff),
+		new(big.Int).Add(atlantisBlock, big.NewInt(-1)): calcDifficultyAtlantis(time, &types.Header{Number: new(big.Int).Add(atlantisBlock, big.NewInt(-1)), Time: new(big.Int).SetUint64(parentTime), Difficulty: parentDiff}),
+		new(big.Int).Add(atlantisBlock, big.NewInt(0)):  calcDifficultyAtlantis(time, &types.Header{Number: new(big.Int).Add(atlantisBlock, big.NewInt(0)), Time: new(big.Int).SetUint64(parentTime), Difficulty: parentDiff}),
+		new(big.Int).Add(atlantisBlock, big.NewInt(1)):  calcDifficultyAtlantis(time, &types.Header{Number: new(big.Int).Add(atlantisBlock, big.NewInt(1)), Time: new(big.Int).SetUint64(parentTime), Difficulty: parentDiff}),
+
+		new(big.Int).Add(atlantisBlock, big.NewInt(1000000)): calcDifficultyAtlantis(time, &types.Header{Number: new(big.Int).Add(atlantisBlock, big.NewInt(1000000)), Time: new(big.Int).SetUint64(parentTime), Difficulty: parentDiff}),
 	}
 
 	for parentNum, expected := range table {
-		difficulty := CalcDifficulty(config, time, parentTime, parentNum, parentDiff)
+		parent := &types.Header{
+			Number:     parentNum,
+			Time:       new(big.Int).SetUint64(parentTime),
+			Difficulty: parentDiff,
+		}
+
+		difficulty := CalcDifficulty(config, time, parent)
 		if difficulty.Cmp(expected) != 0 {
 			t.Errorf("config: %v, got: %v, want: %v, with parentBlock: %v", "mainnet", difficulty, expected, parentNum)
 		}
@@ -428,6 +444,12 @@ func TestCalcDifficulty1Morden(t *testing.T) {
 	defuseBlock := config.ForkByName("Defuse Difficulty Bomb").Block
 	if defuseBlock == nil {
 		t.Error("missing Defuse Difficulty Bomb fork block")
+	}
+
+	// Atlantis
+	atlantisBlock := config.ForkByName("Atlantis").Block
+	if atlantisBlock == nil {
+		t.Error("missing Atlantis fork block")
 	}
 
 	defuseFeat, _, defuseConfigured := config.GetFeature(defuseBlock, "difficulty")
@@ -464,11 +486,21 @@ func TestCalcDifficulty1Morden(t *testing.T) {
 		new(big.Int).Add(defuseBlock, big.NewInt(0)):  calcDifficultyDefused(time, parentTime, new(big.Int).Add(defuseBlock, big.NewInt(0)), parentDiff),
 		new(big.Int).Add(defuseBlock, big.NewInt(1)):  calcDifficultyDefused(time, parentTime, new(big.Int).Add(defuseBlock, big.NewInt(1)), parentDiff),
 
-		big.NewInt(10000000): calcDifficultyDefused(time, parentTime, big.NewInt(10000000), parentDiff),
+		new(big.Int).Add(atlantisBlock, big.NewInt(-1)): calcDifficultyAtlantis(time, &types.Header{Number: new(big.Int).Add(atlantisBlock, big.NewInt(-1)), Time: new(big.Int).SetUint64(parentTime), Difficulty: parentDiff}),
+		new(big.Int).Add(atlantisBlock, big.NewInt(0)):  calcDifficultyAtlantis(time, &types.Header{Number: new(big.Int).Add(atlantisBlock, big.NewInt(0)), Time: new(big.Int).SetUint64(parentTime), Difficulty: parentDiff}),
+		new(big.Int).Add(atlantisBlock, big.NewInt(1)):  calcDifficultyAtlantis(time, &types.Header{Number: new(big.Int).Add(atlantisBlock, big.NewInt(1)), Time: new(big.Int).SetUint64(parentTime), Difficulty: parentDiff}),
+
+		new(big.Int).Add(atlantisBlock, big.NewInt(1000000)): calcDifficultyAtlantis(time, &types.Header{Number: new(big.Int).Add(atlantisBlock, big.NewInt(1000000)), Time: new(big.Int).SetUint64(parentTime), Difficulty: parentDiff}),
 	}
 
 	for parentNum, expected := range table {
-		difficulty := CalcDifficulty(config, time, parentTime, parentNum, parentDiff)
+		parent := &types.Header{
+			Number:     parentNum,
+			Time:       new(big.Int).SetUint64(parentTime),
+			Difficulty: parentDiff,
+		}
+
+		difficulty := CalcDifficulty(config, time, parent)
 		if difficulty.Cmp(expected) != 0 {
 			t.Errorf("config: %v, got: %v, want: %v, with parentBlock: %v", "mainnet", difficulty, expected, parentNum)
 		}

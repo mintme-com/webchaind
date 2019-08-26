@@ -62,6 +62,18 @@
                 "name": "LYRA2v2",
                 "block": 2619000,
                 "requiredHash": "0x0000000000000000000000000000000000000000000000000000000000000000"
+            },
+            {
+                "name": "Atlantis", // TODO
+                "block": 8772000,
+                "features": [
+                    {
+                        "id": "difficulty",
+                        "options": {
+                            "type": "atlantis"
+                        }
+                    }
+                ]
             }
         ],
         "badHashes": [
