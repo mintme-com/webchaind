@@ -18,7 +18,7 @@ build-essential`. On Mac: `xcode-select --install`.
 
 #### Get source and dependencies
 ```
-`$ go get -v github.com/webchain-network/webchaind/...`
+$ go get -v github.com/webchain-network/webchaind/...
 ```
 
 #### Install and build command executables
@@ -29,12 +29,12 @@ Executables installed from source will, by default, be installed in `$GOPATH/bin
 
 - the full suite of utilities:
 ```
-$ go install github.com/webchain-network/webchaind/cmd/...`
+$ go install github.com/webchain-network/webchaind/cmd/...
 ```
 
 - just __webchaind__:
 ```
-$ go install github.com/webchain-network/webchaind/cmd/webchaind`
+$ go install github.com/webchain-network/webchaind/cmd/webchaind
 ```
 
 ##### With make:
