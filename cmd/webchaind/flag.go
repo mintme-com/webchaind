@@ -39,6 +39,7 @@ import (
 	"github.com/webchain-network/webchaind/core/types"
 	"github.com/webchain-network/webchaind/crypto"
 	"github.com/webchain-network/webchaind/eth"
+	"github.com/webchain-network/webchaind/eth/downloader"
 	"github.com/webchain-network/webchaind/ethdb"
 	"github.com/webchain-network/webchaind/event"
 	"github.com/webchain-network/webchaind/logger"
@@ -361,11 +362,11 @@ func MakeWSRpcHost(ctx *cli.Context) string {
 // for webchaind and returns half of the allowance to assign to the database.
 func MakeDatabaseHandles() int {
 	if err := raiseFdLimit(2048); err != nil {
-		glog.V(logger.Warn).Errorf("Failed to raise file descriptor allowance: ", err)
+		glog.V(logger.Warn).Errorf("Failed to raise file descriptor allowance: %v", err)
 	}
 	limit, err := getFdLimit()
 	if err != nil {
-		glog.V(logger.Warn).Errorf("Failed to retrieve file descriptor allowance: ", err)
+		glog.V(logger.Warn).Errorf("Failed to retrieve file descriptor allowance: %v", err)
 	}
 	if limit > 2048 { // cap database file descriptors even if more is available
 		limit = 2048
@@ -494,16 +495,16 @@ func MakeSystemNode(version string, ctx *cli.Context) *node.Node {
 	// Assemble and return the protocol stack
 	stack, err := node.New(stackConf)
 	if err != nil {
-		glog.Fatalf("%v: failed to create the protocol stack: ", ErrStackFail, err)
+		glog.Fatalf("%v: failed to create the protocol stack: %v", ErrStackFail, err)
 	}
 	if err := stack.Register(func(ctx *node.ServiceContext) (node.Service, error) {
 		return eth.New(ctx, ethConf)
 	}); err != nil {
-		glog.Fatalf("%v: failed to register the Ethereum service: ", ErrStackFail, err)
+		glog.Fatalf("%v: failed to register the Ethereum service: %v", ErrStackFail, err)
 	}
 	if shhEnable {
 		if err := stack.Register(func(*node.ServiceContext) (node.Service, error) { return whisper.New(), nil }); err != nil {
-			glog.Fatalf("%v: failed to register the Whisper service: ", ErrStackFail, err)
+			glog.Fatalf("%v: failed to register the Whisper service: %v", ErrStackFail, err)
 		}
 	}
 
@@ -592,7 +593,6 @@ func mustMakeEthConf(ctx *cli.Context, sconf *core.SufficientChainConfig) *eth.C
 		ChainConfig:             sconf.ChainConfig,
 		Genesis:                 sconf.Genesis,
 		UseAddrTxIndex:          ctx.GlobalBool(aliasableName(AddrTxIndexFlag.Name, ctx)),
-		FastSync:                ctx.GlobalBool(aliasableName(FastSyncFlag.Name, ctx)),
 		BlockChainVersion:       ctx.GlobalInt(aliasableName(BlockchainVersionFlag.Name, ctx)),
 		DatabaseCache:           ctx.GlobalInt(aliasableName(CacheFlag.Name, ctx)),
 		DatabaseHandles:         MakeDatabaseHandles(),
@@ -611,6 +611,13 @@ func mustMakeEthConf(ctx *cli.Context, sconf *core.SufficientChainConfig) *eth.C
 		GpobaseStepUp:           ctx.GlobalInt(aliasableName(GpobaseStepUpFlag.Name, ctx)),
 		GpobaseCorrectionFactor: ctx.GlobalInt(aliasableName(GpobaseCorrectionFactorFlag.Name, ctx)),
 		SolcPath:                ctx.GlobalString(aliasableName(SolcPathFlag.Name, ctx)),
+	}
+
+	if ctx.GlobalBool(aliasableName(FastSyncFlag.Name, ctx)) {
+		ethConf.SyncMode = downloader.FastSync
+	}
+	if ctx.GlobalBool(aliasableName(SlowSyncFlag.Name, ctx)) {
+		ethConf.SyncMode = downloader.ForceFullSync
 	}
 
 	if _, ok := ethConf.GasPrice.SetString(ctx.GlobalString(aliasableName(GasPriceFlag.Name, ctx)), 0); !ok {
