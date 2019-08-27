@@ -12,6 +12,8 @@ github.com/eth-classic/ethash v0.0.0-20190401191819-b3fdb17512de/go.mod h1:W/nJf
 github.com/eth-classic/go-ethereum v0.0.0-20190521151733-61b178b4deeb/go.mod h1:SE2Tm8M3TSoN2s9L1cJvCNQoY0mzUxV3Do8/nsNbrWQ=
 github.com/eth-classic/go-ethereum/accounts/abi/bind v0.0.0-20190521151733-fe17e9e1e2ce h1:s4NMPGFYsBRX+LGJAFZP4HG6DzZMhvQ++H0/Y712pFw=
 github.com/eth-classic/go-ethereum/accounts/abi/bind v0.0.0-20190521151733-fe17e9e1e2ce/go.mod h1:N45ToIEdDjjzHVQq1I7qeyg+X3Mz76sA5FdIaPwquGU=
+github.com/ethereumproject/benchmark v0.0.0-20180113190147-8eff34efba25 h1:ZEfDopMiJCB3BiA90t9tMTx4WQtC0PpB4NheR0aqDzU=
+github.com/ethereumproject/benchmark v0.0.0-20180113190147-8eff34efba25/go.mod h1:YiSza/iCwF4jZK5euftNHCef3jwbxZAw5pogH05EuDg=
 github.com/fatih/color v1.7.0 h1:DkWD4oS2D8LGGgTQ6IvwJJXSL5Vp2ffcQg58nFV38Ys=
 github.com/fatih/color v1.7.0/go.mod h1:Zm6kSWBoL9eyXnKyktHP6abPY2pDugNf5KwzbycvMj4=
 github.com/fsnotify/fsnotify v1.4.7/go.mod h1:jwhsz4b93w/PPRr/qN1Yymfu8t87LnFCMoQvtojpjFo=
@@ -34,6 +36,8 @@ github.com/ianlancetaylor/demangle v0.0.0-20181102032728-5e5cf60278f6 h1:UDMh68U
 github.com/ianlancetaylor/demangle v0.0.0-20181102032728-5e5cf60278f6/go.mod h1:aSSvb/t6k1mPoxDqO4vJh6VOCGPwU4O0C2/Eqndh1Sc=
 github.com/jackpal/go-nat-pmp v1.0.1 h1:i0LektDkO1QlrTm/cSuP+PyBCDnYvjPLGl4LdWEMiaA=
 github.com/jackpal/go-nat-pmp v1.0.1/go.mod h1:QPH045xvCAeXUZOxsnwmrtiCoxIr9eob+4orBN1SBKc=
+github.com/klauspost/cpuid v1.2.1 h1:vJi+O/nMdFt0vqm8NZBI6wzALWdA2X+egi0ogNyrC/w=
+github.com/klauspost/cpuid v1.2.1/go.mod h1:Pj4uuM528wm8OyEC2QMXAi2YiTZ96dNQPGgoMS4s3ek=
 github.com/mailru/easyjson v0.0.0-20190403194419-1ea4449da983 h1:wL11wNW7dhKIcRCHSm4sHKPWz0tt4mwBsVodG7+Xyqg=
 github.com/mailru/easyjson v0.0.0-20190403194419-1ea4449da983/go.mod h1:C1wdFJiN94OJF2b5HbByQZoLdCWB1Yqtg26g4irojpc=
 github.com/maruel/panicparse v1.1.1 h1:k62YPcEoLncEEpjMt92GtG5ugb8WL/510Ys3/h5IkRc=
@@ -80,6 +84,10 @@ github.com/stretchr/testify v1.3.0 h1:TivCn/peBQ7UY8ooIcPgZFpTNSz0Q2U6UrFlUfqbe0
 github.com/stretchr/testify v1.3.0/go.mod h1:M5WIy9Dh21IEIfnGCwXGc5bZfKNJtfHm1UVUgZn+9EI=
 github.com/syndtr/goleveldb v0.0.0-20171214120811-34011bf325bc h1:yhWARKbbDg8UBRi/M5bVcVOBg2viFKcNJEAtHMYbRBo=
 github.com/syndtr/goleveldb v0.0.0-20171214120811-34011bf325bc/go.mod h1:Z4AUp2Km+PwemOoO/VB5AOx9XSsIItzFjoJlOSiYmn0=
+github.com/webchain-network/cryptonight v0.0.0-20190710091206-c830472bb2a3 h1:gfzHbAhGnei84doBhDRxdfOPFTAezJyOKM5DbBsR0bU=
+github.com/webchain-network/cryptonight v0.0.0-20190710091206-c830472bb2a3/go.mod h1:TSKPeZDY20hIUJumKqmGxPSY5eul1TfWBi3I6DwzTAc=
+github.com/webchain-network/webchaind v0.4.0 h1:fV0zR4+9EuUwh4ou5VOmgALbpSoH7kv8cmGr69RkeC8=
+github.com/webchain-network/webchaind v0.4.0/go.mod h1:HUdbhMISapIAc7lmQtCVRuwFs39Yi/WDejhvINv/PrE=
 golang.org/x/crypto v0.0.0-20190308221718-c2843e01d9a2/go.mod h1:djNgcEr1/C05ACkg1iLfiJU5Ep61QUkGW8qpdssI0+w=
 golang.org/x/crypto v0.0.0-20190418165655-df01cb2cc480 h1:O5YqonU5IWby+w98jVUG9h7zlCWCcH4RHyPVReBmhzk=
 golang.org/x/crypto v0.0.0-20190418165655-df01cb2cc480/go.mod h1:WFFai1msRO1wXaEeE5yQxYXgSfI8pQAWXbQop6sCtWE=

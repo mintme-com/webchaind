@@ -27,6 +27,11 @@ import (
 	"github.com/webchain-network/webchaind/rlp"
 )
 
+var (
+	receiptStatusFailedRLP     = []byte{}
+	receiptStatusSuccessfulRLP = []byte{0x01}
+)
+
 type ReceiptStatus byte
 
 const (

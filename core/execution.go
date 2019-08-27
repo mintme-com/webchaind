@@ -22,8 +22,10 @@ import (
 	"math/big"
 
 	"github.com/webchain-network/webchaind/common"
+	"github.com/webchain-network/webchaind/core/state"
 	"github.com/webchain-network/webchaind/core/vm"
 	"github.com/webchain-network/webchaind/crypto"
+	"github.com/webchain-network/webchaind/params"
 )
 
 var (
@@ -57,17 +59,17 @@ func Call(env vm.Environment, caller vm.ContractRef, addr common.Address, input 
 	}
 
 	var (
-		from       = env.Db().GetAccount(caller.Address())
-		to         vm.Account
-		snapshot   = env.SnapshotDatabase()
-		isAtlantis = env.RuleSet().IsAtlantis(env.BlockNumber())
+		from        = env.Db().GetAccount(caller.Address())
+		to          vm.Account
+		snapshot    = env.SnapshotDatabase()
+		isHardfork2 = env.RuleSet().IsHardfork2(env.BlockNumber())
 	)
 	if !env.Db().Exist(addr) {
 		precompiles := vm.PrecompiledPreAtlantis
-		if isAtlantis {
+		if isHardfork2 {
 			precompiles = vm.PrecompiledAtlantis
 		}
-		if precompiles[addr.Str()] == nil && isAtlantis && value.BitLen() == 0 {
+		if precompiles[addr.Str()] == nil && isHardfork2 && value.BitLen() == 0 {
 			caller.ReturnGas(gas, gasPrice)
 			return nil, nil
 		}
@@ -266,7 +268,7 @@ func Create(env vm.Environment, caller vm.ContractRef, code []byte, gas, gasPric
 
 	ret, err = env.Vm().Run(contract, nil, false)
 
-	maxCodeSizeExceeded := len(ret) > maxCodeSize && env.RuleSet().IsAtlantis(env.BlockNumber())
+	maxCodeSizeExceeded := len(ret) > maxCodeSize && env.RuleSet().IsHardfork2(env.BlockNumber())
 	// if the contract creation ran successfully and no errors were returned
 	// calculate the gas required to store the code. If the code could not
 	// be stored due to not enough gas set an error and let it be handled

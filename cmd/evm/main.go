@@ -228,6 +228,8 @@ type ruleSet struct{}
 
 func (ruleSet) IsHomestead(*big.Int) bool { return true }
 
+func (ruleSet) IsHardfork2(*big.Int) bool { return true }
+
 func (ruleSet) IsAtlantis(*big.Int) bool {
 	// Default true for tests
 	return true

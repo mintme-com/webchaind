@@ -21,11 +21,11 @@ import (
 	"math/big"
 	"testing"
 
-	"github.com/eth-classic/go-ethereum/common"
-	"github.com/eth-classic/go-ethereum/common/hexutil"
-	"github.com/eth-classic/go-ethereum/core"
-	"github.com/eth-classic/go-ethereum/core/types"
-	"github.com/eth-classic/go-ethereum/params"
+	"github.com/webchain-network/webchaind/common"
+	"github.com/webchain-network/webchaind/common/hexutil"
+	"github.com/webchain-network/webchaind/core"
+	"github.com/webchain-network/webchaind/core/types"
+	"github.com/webchain-network/webchaind/params"
 )
 
 // DifficultyTest is the structure of JSON from test files

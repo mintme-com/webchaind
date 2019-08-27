@@ -76,7 +76,7 @@ func (evm *EVM) Run(contract *Contract, input []byte, readOnly bool) (ret []byte
 	evm.env.SetReturnData(nil)
 
 	if contract.CodeAddr != nil {
-		if evm.env.RuleSet().IsAtlantis(evm.env.BlockNumber()) {
+		if evm.env.RuleSet().IsHardfork2(evm.env.BlockNumber()) {
 			if p := PrecompiledAtlantis[contract.CodeAddr.Str()]; p != nil {
 				return evm.RunPrecompiled(p, input, contract)
 			}
@@ -102,7 +102,7 @@ func (evm *EVM) Run(contract *Contract, input []byte, readOnly bool) (ret []byte
 		caller     = contract.caller
 		instrCount = 0
 
-		isAtlantis = evm.env.RuleSet().IsAtlantis(evm.env.BlockNumber())
+		isHardfork2 = evm.env.RuleSet().IsHardfork2(evm.env.BlockNumber())
 
 		op      OpCode         // current opcode
 		mem     = NewMemory()  // bound memory
@@ -136,7 +136,7 @@ func (evm *EVM) Run(contract *Contract, input []byte, readOnly bool) (ret []byte
 		}
 
 		// If the operation is valid, enforce and write restrictions
-		if evm.readOnly && isAtlantis {
+		if evm.readOnly && isHardfork2 {
 			// If the interpreter is operating in readonly mode, make sure no
 			// state-modifying operation is performed. The 3rd stack item
 			// for a call operation is the value. Transferring value from one
@@ -182,9 +182,9 @@ func (evm *EVM) Run(contract *Contract, input []byte, readOnly bool) (ret []byte
 // the operation. This does not reduce gas or resizes the memory.
 func calculateGasAndSize(gasTable *GasTable, env Environment, contract *Contract, caller ContractRef, op OpCode, statedb Database, mem *Memory, stack *stack) (*big.Int, *big.Int, error) {
 	var (
-		gas                 = new(big.Int)
-		newMemSize *big.Int = new(big.Int)
-		isAtlantis          = env.RuleSet().IsAtlantis(env.BlockNumber())
+		gas                  = new(big.Int)
+		newMemSize  *big.Int = new(big.Int)
+		isHardfork2          = env.RuleSet().IsHardfork2(env.BlockNumber())
 	)
 	err := baseCheck(op, stack, gas)
 	if err != nil {
@@ -209,7 +209,7 @@ func calculateGasAndSize(gasTable *GasTable, env Environment, contract *Contract
 		// if suicide is not nil: homestead gas fork
 		if gasTable.CreateBySuicide != nil {
 			gas.Set(gasTable.Suicide)
-			if isAtlantis {
+			if isHardfork2 {
 				if env.Db().Empty(address) && env.Db().GetBalance(contract.Address()).Sign() != 0 {
 					gas.Add(gas, gasTable.CreateBySuicide)
 				}
@@ -341,7 +341,7 @@ func calculateGasAndSize(gasTable *GasTable, env Environment, contract *Contract
 		if op == CALL {
 			address := common.BigToAddress(stack.back(1))
 			transfersValue := stack.back(2).Sign() != 0
-			if isAtlantis {
+			if isHardfork2 {
 				if transfersValue && env.Db().Empty(address) {
 					gas.Add(gas, big.NewInt(25000))
 				}

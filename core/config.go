@@ -352,8 +352,12 @@ func (c *ChainConfig) IsHardfork2(num *big.Int) bool {
 }
 
 // IsAtlantis returns true if num is greater than atlantic config block
-func (c *ChainConfig) IsAtlantis(num *big.Int) bool { // TODO: ??
-	return c.IsHardfork2(num)
+func (c *ChainConfig) IsAtlantis(num *big.Int) bool {
+	fork := c.ForkByName("Atlantis")
+	if fork.Block == nil || num == nil {
+		return false
+	}
+	return num.Cmp(fork.Block) >= 0
 }
 
 // ForkByName looks up a Fork by its name, assumed to be unique

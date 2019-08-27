@@ -1,17 +1,17 @@
-module github.com/eth-classic/go-ethereum
+module github.com/webchain-network/webchaind
 
 require (
 	github.com/boltdb/bolt v1.3.1
 	github.com/davecgh/go-spew v1.1.1
 	github.com/denisbrodbeck/machineid v0.8.0 //mark
 	github.com/eth-classic/benchmark v0.0.0-20190401191651-0f5bf26f7cd8
-	github.com/eth-classic/ethash v0.0.0-20190401191819-b3fdb17512de
-	github.com/eth-classic/go-ethereum/accounts/abi/bind v0.0.0-20190521151733-fe17e9e1e2ce
+	github.com/ethereumproject/benchmark v0.0.0-20180113190147-8eff34efba25
 	github.com/fatih/color v1.7.0
 	github.com/gizak/termui v2.3.0+incompatible
 	github.com/hashicorp/golang-lru v0.5.1
 	github.com/huin/goupnp v1.0.0
 	github.com/jackpal/go-nat-pmp v1.0.1
+	github.com/klauspost/cpuid v1.2.1 // indirect
 	github.com/mailru/easyjson v0.0.0-20190403194419-1ea4449da983
 	github.com/maruel/panicparse v1.2.0 // indirect
 	github.com/mattn/go-colorable v0.1.2 // indirect
@@ -24,6 +24,8 @@ require (
 	github.com/spf13/afero v1.2.2
 	github.com/stretchr/testify v1.3.0
 	github.com/syndtr/goleveldb v0.0.0-20171214120811-34011bf325bc
+	github.com/webchain-network/cryptonight v0.0.0-20190710091206-c830472bb2a3
+	github.com/webchain-network/webchaind/accounts/abi/bind v0.0.0-20190521151733-fe17e9e1e2ce
 	golang.org/x/crypto v0.0.0-20190418165655-df01cb2cc480
 	golang.org/x/net v0.0.0-20190419010253-1f3472d942ba
 	golang.org/x/sys v0.0.0-20190419153524-e8e3143a4f4a
@@ -34,4 +36,4 @@ require (
 	gopkg.in/urfave/cli.v1 v1.17.0
 )
 
-replace github.com/eth-classic/go-ethereum/accounts/abi/bind v0.0.0-20190521151733-fe17e9e1e2ce => ./accounts/abi/bind
+replace github.com/webchain-network/webchaind/accounts/abi/bind v0.0.0-20190521151733-fe17e9e1e2ce => ./accounts/abi/bind

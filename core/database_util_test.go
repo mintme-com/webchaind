@@ -36,14 +36,6 @@ import (
 	"github.com/webchain-network/webchaind/ethdb"
 	"github.com/webchain-network/webchaind/rlp"
 	"strings"
-
-	"github.com/eth-classic/go-ethereum/common"
-	"github.com/eth-classic/go-ethereum/core/types"
-	"github.com/eth-classic/go-ethereum/core/vm"
-	"github.com/eth-classic/go-ethereum/crypto"
-	"github.com/eth-classic/go-ethereum/crypto/sha3"
-	"github.com/eth-classic/go-ethereum/ethdb"
-	"github.com/eth-classic/go-ethereum/rlp"
 )
 
 type diffTest struct {

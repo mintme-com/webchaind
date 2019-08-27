@@ -154,6 +154,7 @@ type RuleSet struct {
 	HomesteadGasRepriceBlock *big.Int
 	DiehardBlock             *big.Int
 	ExplosionBlock           *big.Int
+	Hardfork2Block           *big.Int
 	AtlantisBlock            *big.Int
 }
 
@@ -197,6 +198,10 @@ type stTransaction struct {
 
 func (r RuleSet) IsHomestead(n *big.Int) bool {
 	return r.HomesteadBlock != nil && n.Cmp(r.HomesteadBlock) >= 0
+}
+
+func (r RuleSet) IsHardfork2(n *big.Int) bool {
+	return r.Hardfork2Block != nil && n.Cmp(r.Hardfork2Block) >= 0
 }
 
 func (r RuleSet) IsAtlantis(n *big.Int) bool {

@@ -33,6 +33,8 @@ import (
 	"github.com/webchain-network/webchaind/crypto"
 	"github.com/webchain-network/webchaind/ethdb"
 	"github.com/webchain-network/webchaind/logger/glog"
+	"github.com/webchain-network/webchaind/rlp"
+	"golang.org/x/crypto/sha3"
 )
 
 // StateSubtest selects a specific configuration of a General State Test.

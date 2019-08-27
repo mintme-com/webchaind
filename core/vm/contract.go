@@ -170,11 +170,3 @@ func (c *Contract) isValidJump(pc *uint64, to *big.Int) bool {
 
 	return true
 }
-
-func (c *Contract) isValidJump(pc *uint64, to *big.Int) bool {
-	if !c.jumpdests.has(c.CodeHash, c.Code, to) {
-		return false
-	}
-
-	return true
-}
