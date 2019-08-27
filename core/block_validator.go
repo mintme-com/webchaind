@@ -32,12 +32,8 @@ import (
 )
 
 var (
-	DurationLimit          = big.NewInt(13) // The decision boundary on the blocktime duration used to determine whether difficulty should go up or not.
-	ExpDiffPeriod          = big.NewInt(100000)
-	MinimumDifficulty      = big.NewInt(10000)
 	MinGasLimit            = big.NewInt(5000)    // Minimum the gas limit may ever be.
 	TargetGasLimit         = big.NewInt(4712388) // The artificial target
-	DifficultyBoundDivisor = big.NewInt(200)     // The bound divisor of the difficulty, used in the update calculations.
 	GasLimitBoundDivisor   = big.NewInt(1024)    // The bound divisor of the gas limit, used in update calculations.
 )
 
@@ -47,7 +43,6 @@ var (
 	big9       = big.NewInt(9)
 	big10      = big.NewInt(10)
 	bigMinus20 = big.NewInt(-20)
-	bigMinus99 = big.NewInt(-99)
 )
 
 // Difficulty allows passing configurable options to a given difficulty algorithm.
@@ -309,7 +304,7 @@ func calcDifficultyAtlantis(time uint64, parent *types.Header) *big.Int {
 	// https://github.com/ethereum/EIPs/issues/100.
 	// algorithm:
 	// diff = (parent_diff +
-	//         (parent_diff / 2048 * max((2 if len(parent.uncles) else 1) - ((timestamp - parent.timestamp) // 9), -99))
+	//         (parent_diff / 200 * max((2 if len(parent.uncles) else 1) - ((timestamp - parent.timestamp) // 9), -20))
 	//        ) + 2^(periodCount - 2)
 
 	bigTime := new(big.Int).SetUint64(time)
@@ -327,11 +322,11 @@ func calcDifficultyAtlantis(time uint64, parent *types.Header) *big.Int {
 	} else {
 		x.Sub(big2, x)
 	}
-	// max((2 if len(parent_uncles) else 1) - (block_timestamp - parent_timestamp) // 9, -99)
-	if x.Cmp(bigMinus99) < 0 {
-		x.Set(bigMinus99)
+	// max((2 if len(parent_uncles) else 1) - (block_timestamp - parent_timestamp) // 9, -20)
+	if x.Cmp(bigMinus20) < 0 {
+		x.Set(bigMinus20)
 	}
-	// parent_diff + (parent_diff / 2048 * max((2 if len(parent.uncles) else 1) - ((timestamp - parent.timestamp) // 9), -99))
+	// parent_diff + (parent_diff / 200 * max((2 if len(parent.uncles) else 1) - ((timestamp - parent.timestamp) // 9), -20))
 	y.Div(parent.Difficulty, params.DifficultyBoundDivisor)
 	x.Mul(y, x)
 	x.Add(parent.Difficulty, x)
@@ -368,13 +363,13 @@ func calcDifficultyDefused(time, parentTime uint64, parentNumber, parentDiff *bi
 	}
 
 	// (parent_diff + parent_diff // 200 * max(1 - (block_timestamp - parent_timestamp) // 10, -20))
-	y.Div(parentDiff, DifficultyBoundDivisor)
+	y.Div(parentDiff, params.DifficultyBoundDivisor)
 	x.Mul(y, x)
 	x.Add(parentDiff, x)
 
 	// minimum difficulty can ever be (before exponential factor)
-	if x.Cmp(MinimumDifficulty) < 0 {
-		x.Set(MinimumDifficulty)
+	if x.Cmp(params.MinimumDifficulty) < 0 {
+		x.Set(params.MinimumDifficulty)
 	}
 
 	return x
