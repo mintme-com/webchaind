@@ -647,7 +647,7 @@ func TestReceiptStorage(t *testing.T) {
 	db, _ := ethdb.NewMemDatabase()
 
 	receipt1 := &types.Receipt{
-		PostState:         []byte{0x01},
+		Status:            types.TxFailure,
 		CumulativeGasUsed: big.NewInt(1),
 		Logs: vm.Logs{
 			&vm.Log{Address: common.BytesToAddress([]byte{0x11})},
@@ -658,7 +658,7 @@ func TestReceiptStorage(t *testing.T) {
 		GasUsed:         big.NewInt(111111),
 	}
 	receipt2 := &types.Receipt{
-		PostState:         []byte{0x02},
+		PostState:         []byte{},
 		CumulativeGasUsed: big.NewInt(2),
 		Logs: vm.Logs{
 			&vm.Log{Address: common.BytesToAddress([]byte{0x22})},
@@ -701,12 +701,118 @@ func TestReceiptStorage(t *testing.T) {
 	}
 }
 
+func TestReceiptStorageEncoding(t *testing.T) {
+	var w bytes.Buffer
+	r := &types.ReceiptForStorage{
+		PostState:         []byte{0x01, 0x02},
+		Status:            types.TxSuccess,
+		CumulativeGasUsed: big.NewInt(1),
+		Logs: vm.Logs{
+			&vm.Log{Address: common.BytesToAddress([]byte{0x11})},
+			&vm.Log{Address: common.BytesToAddress([]byte{0x01, 0x11})},
+		},
+		TxHash:          common.BytesToHash([]byte{0x12, 0x11}),
+		ContractAddress: common.BytesToAddress([]byte{0x01, 0x11, 0x11}),
+		GasUsed:         big.NewInt(111111),
+	}
+
+	r.EncodeRLP(&w)
+
+	var encodedReceipt types.ReceiptForStorage
+	stream := rlp.NewStream(bytes.NewReader(w.Bytes()), 0)
+	encodedReceipt.DecodeRLP(stream)
+
+	if bytes.Compare(encodedReceipt.PostState, r.PostState) != 0 {
+		t.Errorf("Old storage receipt PostState: have (%v) want (%v)", encodedReceipt.PostState, r.PostState)
+	}
+	if encodedReceipt.Status != r.Status {
+		t.Errorf("Old storage receipt status: have (%v) want (%v)", encodedReceipt.Status, r.Status)
+	}
+	if encodedReceipt.CumulativeGasUsed.Cmp(r.CumulativeGasUsed) != 0 {
+		t.Errorf("Old storage receipt CumulativeGasUsed: have (%v) want (%v)", encodedReceipt.CumulativeGasUsed, r.CumulativeGasUsed)
+	}
+	if encodedReceipt.TxHash != r.TxHash {
+		t.Errorf("Old storage receipt TxHash: have (%v) want (%v)", encodedReceipt.TxHash, r.TxHash)
+	}
+	if encodedReceipt.ContractAddress != r.ContractAddress {
+		t.Errorf("Old storage receipt ContractAddress: have (%v) want (%v)", encodedReceipt.ContractAddress, r.ContractAddress)
+	}
+	if encodedReceipt.GasUsed.Cmp(r.GasUsed) != 0 {
+		t.Errorf("Old storage receipt GasUsed: have (%v) want (%v)", encodedReceipt.GasUsed, r.GasUsed)
+	}
+	for i, log := range r.Logs {
+		if bytes.Compare(r.Logs[i].Data, log.Data) != 0 {
+			t.Errorf("Old storage receipt Log: have (%v) want (%v)", log.Data, r.Logs[i].Data)
+		}
+	}
+}
+
+func TestOldReceiptStorageTransition(t *testing.T) {
+	var w bytes.Buffer
+	r := &types.Receipt{
+		PostState:         []byte{0x24, 0x12},
+		Status:            types.TxSuccess,
+		CumulativeGasUsed: big.NewInt(1),
+		Logs: vm.Logs{
+			&vm.Log{Address: common.BytesToAddress([]byte{0x11})},
+			&vm.Log{Address: common.BytesToAddress([]byte{0x01, 0x11})},
+		},
+		TxHash:          common.BytesToHash([]byte{0x11, 0x11}),
+		ContractAddress: common.BytesToAddress([]byte{0x01, 0x11, 0x11}),
+		GasUsed:         big.NewInt(111111),
+	}
+
+	logs := make([]*vm.LogForStorage, len(r.Logs))
+	for i, log := range r.Logs {
+		logs[i] = (*vm.LogForStorage)(log)
+	}
+
+	rlp.Encode(&w, []interface{}{
+		r.PostState,
+		r.CumulativeGasUsed,
+		r.Bloom,
+		r.TxHash,
+		r.ContractAddress,
+		logs,
+		r.GasUsed,
+		r.Status,
+	})
+
+	var encodedReceipt types.ReceiptForStorage
+	stream := rlp.NewStream(bytes.NewReader(w.Bytes()), 0)
+	encodedReceipt.DecodeRLP(stream)
+
+	if bytes.Compare(encodedReceipt.PostState, r.PostState) != 0 {
+		t.Errorf("Old storage receipt PostState: have (%v) want (%v)", encodedReceipt.PostState, r.PostState)
+	}
+	if encodedReceipt.Status != r.Status {
+		t.Errorf("Old storage receipt status: have (%v) want (%v)", encodedReceipt.Status, r.Status)
+	}
+	if encodedReceipt.CumulativeGasUsed.Cmp(r.CumulativeGasUsed) != 0 {
+		t.Errorf("Old storage receipt CumulativeGasUsed: have (%v) want (%v)", encodedReceipt.CumulativeGasUsed, r.CumulativeGasUsed)
+	}
+	if encodedReceipt.TxHash != r.TxHash {
+		t.Errorf("Old storage receipt TxHash: have (%v) want (%v)", encodedReceipt.TxHash, r.TxHash)
+	}
+	if encodedReceipt.ContractAddress != r.ContractAddress {
+		t.Errorf("Old storage receipt ContractAddress: have (%v) want (%v)", encodedReceipt.ContractAddress, r.ContractAddress)
+	}
+	if encodedReceipt.GasUsed.Cmp(r.GasUsed) != 0 {
+		t.Errorf("Old storage receipt GasUsed: have (%v) want (%v)", encodedReceipt.GasUsed, r.GasUsed)
+	}
+	for i, log := range r.Logs {
+		if bytes.Compare(r.Logs[i].Data, log.Data) != 0 {
+			t.Errorf("Old storage receipt Log: have (%v) want (%v)", log.Data, r.Logs[i].Data)
+		}
+	}
+}
+
 // Tests that receipts associated with a single block can be stored and retrieved.
 func TestBlockReceiptStorage(t *testing.T) {
 	db, _ := ethdb.NewMemDatabase()
 
 	receipt1 := &types.Receipt{
-		PostState:         []byte{0x01},
+		Status:            types.TxFailure,
 		CumulativeGasUsed: big.NewInt(1),
 		Logs: vm.Logs{
 			&vm.Log{Address: common.BytesToAddress([]byte{0x11})},
@@ -717,7 +823,7 @@ func TestBlockReceiptStorage(t *testing.T) {
 		GasUsed:         big.NewInt(111111),
 	}
 	receipt2 := &types.Receipt{
-		PostState:         []byte{0x02},
+		PostState:         []byte{},
 		CumulativeGasUsed: big.NewInt(2),
 		Logs: vm.Logs{
 			&vm.Log{Address: common.BytesToAddress([]byte{0x22})},

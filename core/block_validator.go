@@ -26,21 +26,21 @@ import (
 	"github.com/webchain-network/webchaind/core/state"
 	"github.com/webchain-network/webchaind/core/types"
 	"github.com/webchain-network/webchaind/logger/glog"
+	"github.com/webchain-network/webchaind/params"
 	"github.com/webchain-network/webchaind/pow"
 	"gopkg.in/fatih/set.v0"
 )
 
 var (
-	DurationLimit          = big.NewInt(13) // The decision boundary on the blocktime duration used to determine whether difficulty should go up or not.
-	ExpDiffPeriod          = big.NewInt(100000)
-	MinimumDifficulty      = big.NewInt(10000)
 	MinGasLimit            = big.NewInt(5000)    // Minimum the gas limit may ever be.
 	TargetGasLimit         = big.NewInt(4712388) // The artificial target
-	DifficultyBoundDivisor = big.NewInt(200)     // The bound divisor of the difficulty, used in the update calculations.
 	GasLimitBoundDivisor   = big.NewInt(1024)    // The bound divisor of the gas limit, used in update calculations.
 )
 
 var (
+	big1       = big.NewInt(1)
+	big2       = big.NewInt(2)
+	big9       = big.NewInt(9)
 	big10      = big.NewInt(10)
 	bigMinus20 = big.NewInt(-20)
 )
@@ -143,7 +143,7 @@ func (v *BlockValidator) ValidateState(block, parent *types.Block, statedb *stat
 	}
 	// Validate the state root against the received state root and throw
 	// an error if they don't match.
-	if root := statedb.IntermediateRoot(false); header.Root != root {
+	if root := statedb.IntermediateRoot(v.config.IsAtlantis(header.Number)); header.Root != root {
 		return fmt.Errorf("invalid merkle root: header=%x computed=%x", header.Root, root)
 	}
 	return nil
@@ -236,7 +236,7 @@ func ValidateHeader(config *ChainConfig, pow pow.PoW, header *types.Header, pare
 		return BlockEqualTSErr
 	}
 
-	expd := CalcDifficulty(config, header.Time.Uint64(), parent.Time.Uint64(), parent.Number, parent.Difficulty)
+	expd := CalcDifficulty(config, header.Time.Uint64(), parent)
 	if expd.Cmp(header.Difficulty) != 0 {
 		return fmt.Errorf("Difficulty check failed for header %v != %v at %v", header.Difficulty, expd, header.Number)
 	}
@@ -269,7 +269,11 @@ func ValidateHeader(config *ChainConfig, pow pow.PoW, header *types.Header, pare
 // CalcDifficulty is the difficulty adjustment algorithm. It returns
 // the difficulty that a new block should have when created at time
 // given the parent block's time and difficulty.
-func CalcDifficulty(config *ChainConfig, time, parentTime uint64, parentNumber, parentDiff *big.Int) *big.Int {
+func CalcDifficulty(config *ChainConfig, time uint64, parent *types.Header) *big.Int {
+	parentTime := parent.Time.Uint64()
+	parentNumber := parent.Number
+	parentDiff := parent.Difficulty
+
 	if config == nil {
 		glog.Fatalln("missing chain configuration, cannot calculate difficulty")
 	}
@@ -287,11 +291,51 @@ func CalcDifficulty(config *ChainConfig, time, parentTime uint64, parentNumber, 
 		name = ""
 	} // will fall to default panic
 	switch name {
+	case "atlantis":
+		return calcDifficultyAtlantis(time, parent)
 	case "defused":
 		return calcDifficultyDefused(time, parentTime, parentNumber, parentDiff)
 	default:
 		panic(fmt.Sprintf("Unsupported difficulty '%v' for block: %v", name, num))
 	}
+}
+
+func calcDifficultyAtlantis(time uint64, parent *types.Header) *big.Int {
+	// https://github.com/ethereum/EIPs/issues/100.
+	// algorithm:
+	// diff = (parent_diff +
+	//         (parent_diff / 200 * max((2 if len(parent.uncles) else 1) - ((timestamp - parent.timestamp) // 9), -20))
+	//        ) + 2^(periodCount - 2)
+
+	bigTime := new(big.Int).SetUint64(time)
+	bigParentTime := parent.Time
+
+	// holds intermediate values to make the algo easier to read & audit
+	x := new(big.Int)
+	y := new(big.Int)
+
+	// (2 if len(parent_uncles) else 1) - (block_timestamp - parent_timestamp) // 9
+	x.Sub(bigTime, bigParentTime)
+	x.Div(x, big9)
+	if parent.UncleHash == types.EmptyUncleHash {
+		x.Sub(big1, x)
+	} else {
+		x.Sub(big2, x)
+	}
+	// max((2 if len(parent_uncles) else 1) - (block_timestamp - parent_timestamp) // 9, -20)
+	if x.Cmp(bigMinus20) < 0 {
+		x.Set(bigMinus20)
+	}
+	// parent_diff + (parent_diff / 200 * max((2 if len(parent.uncles) else 1) - ((timestamp - parent.timestamp) // 9), -20))
+	y.Div(parent.Difficulty, params.DifficultyBoundDivisor)
+	x.Mul(y, x)
+	x.Add(parent.Difficulty, x)
+
+	// minimum difficulty can ever be (before exponential factor)
+	if x.Cmp(params.MinimumDifficulty) < 0 {
+		x.Set(params.MinimumDifficulty)
+	}
+	return x
 }
 
 func calcDifficultyDefused(time, parentTime uint64, parentNumber, parentDiff *big.Int) *big.Int {
@@ -319,13 +363,13 @@ func calcDifficultyDefused(time, parentTime uint64, parentNumber, parentDiff *bi
 	}
 
 	// (parent_diff + parent_diff // 200 * max(1 - (block_timestamp - parent_timestamp) // 10, -20))
-	y.Div(parentDiff, DifficultyBoundDivisor)
+	y.Div(parentDiff, params.DifficultyBoundDivisor)
 	x.Mul(y, x)
 	x.Add(parentDiff, x)
 
 	// minimum difficulty can ever be (before exponential factor)
-	if x.Cmp(MinimumDifficulty) < 0 {
-		x.Set(MinimumDifficulty)
+	if x.Cmp(params.MinimumDifficulty) < 0 {
+		x.Set(params.MinimumDifficulty)
 	}
 
 	return x

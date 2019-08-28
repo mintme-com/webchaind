@@ -2,122 +2,92 @@
 
 Official Go language implementation of the Webchain daemon.
 
-## Install
+## Install Webchaind
 
-### :rocket: From a release binary
-The simplest way to get started running a node is to visit our [Releases page](https://github.com/webchain-network/webchaind/releases) and download a zipped executable binary (matching your operating system, of course), then moving the unzipped file `webchaind` to somewhere in your `$PATH`. Now you should be able to open a terminal and run `$ webchaind help` to make sure it's working.
+### :gift: Official Releases
+Regular releases will be published on the [release page](https://github.com/webchain-network/webchaind/releases). Binaries will be provided for all releases that are considered fairly stable.
 
 ### :hammer: Building the source
-
 If your heart is set on the bleeding edge, install from source. However, please be advised that you may encounter some strange things, and we can't prioritize support beyond the release versions. Recommended for developers only.
 
 #### Dependencies
-Building webchaind requires both Go >=1.9 and a C compiler. On Linux systems,
-a C compiler can, for example, by installed with `sudo apt-get install
-build-essential`. On Mac: `xcode-select --install`.
+Building webchaind requires both Go `>=1.12` and a C compiler; building with SputnikVM additionally requires Rust. On Linux systems, a `C` compiler can, for example, be installed with `sudo apt-get install build-essential`. On Mac: `xcode-select --install`. For Rust, please use [Rustup](https://rustup.rs/) by executing `curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh`.
 
-#### Get source and dependencies
+#### Build using `make`
+With [Go modules](https://github.com/golang/go/wiki/Modules), dependencies will be downloaded and cached when running build or test commands automatically.
+
+Clone the repository:
+
 ```
-`$ go get -v github.com/webchain-network/webchaind/...`
-```
-
-#### Install and build command executables
-
-Executables installed from source will, by default, be installed in `$GOPATH/bin/`.
-
-##### With go:
-
-- the full suite of utilities:
-```
-$ go install github.com/webchain-network/webchaind/cmd/...`
+git clone https://github.com/webchain-network/webchaind.git && cd webchaind
 ```
 
-- just __webchaind__:
+Build all executables:
+
 ```
-$ go install github.com/webchain-network/webchaind/cmd/webchaind`
+make build
 ```
 
-##### With make:
+Build just webchaind:
 ```
-$ cd $GOPATH/src/github.com/webchain-network/webchaind
-```
-
-- the full suite of utilities:
-```
-$ make install
+make cmd/webchaind
 ```
 
-- just __webchaind__:
-```
-$ make install_webchaind
-```
+For further `make` information, use `make help` to see a list and description of available make commands.
 
-> For further `make` information, use `make help` to see a list and description of available make
-> commands.
-
-
-##### Building a specific release
-All the above commands results with building binaries from `HEAD`. To use a specific release/tag, use the following before installing:
+#### Build using `go`
+The following commands work starting with Go version 1.12+; for Go version 1.11, prepend the commands with `GO111MODULE=on` to enable Go modules. Older Go versions are no longer supported.
 
 ```shell
-$ go get -d github.com/webchain-network/webchaind/...
-$ cd $GOPATH/src/github.com/webchain-network/webchaind
-$ git checkout <TAG OR REVISION>
-# Use a go or make command above.
+mkdir -p ./bin
+
+go build -o ./bin/webchaind -ldflags "-X main.Version="`git describe --tags` -tags="netgo" ./cmd/geth
+go build -o ./bin/abigen ./cmd/abigen
+go build -o ./bin/bootnode ./cmd/bootnode
+go build -o ./bin/disasm ./cmd/disasm
+go build -o ./bin/ethtest ./cmd/ethtest
+go build -o ./bin/evm ./cmd/evm
+go build -o ./bin/gethrpctest ./cmd/gethrpctest
+go build -o ./bin/rlpdump ./cmd/rlpdump
 ```
 
-##### Using a release source code tarball
-Because of strict Go directory structure, the tarball needs to be extracted into the proper subdirectory under `$GOPATH`.
-The following commands are an example of building the v0.1.0 release:
-
-```shell
-$ mkdir -p $GOPATH/src/github.com/webchain-network/webchaind
-$ cd $GOPATH/src/github.com/webchain-network
-$ tar xzf /path/to/v0.1.0.tar.gz
-$ cd webchaind
-# Use a go or make command above.
-```
-
-## Executables
-
+## :tv: Executables
 This repository includes several wrappers/executables found in the `cmd` directory.
 
 | Command    | Description |
 |:----------:|-------------|
-| **`webchaind`** | The main Webchain CLI client. It is the entry point into the Webchain network (main-, test-, or private net), capable of running as a full node (default) archive node (retaining all historical state) or a light node (retrieving data live). It can be used by other processes as a gateway into the Webchain network via JSON RPC endpoints exposed on top of HTTP, WebSocket and/or IPC transports.|
-| `abigen` | Source code generator to convert Webchain contract definitions into easy to use, compile-time type-safe Go packages. It operates on plain [Ethereum contract ABIs](https://github.com/ethereumproject/wiki/wiki/Ethereum-Contract-ABI) with expanded functionality if the contract bytecode is also available. However it also accepts Solidity source files, making development much more streamlined. Please see our [Native DApps](https://github.com/webchain-network/webchaind/wiki/Native-DApps-in-Go) wiki page for details. |
+| **`webchaind`** | The main Webchain command-line client. It is the entry point into the Webchain network (main-, test-, or private networks), capable of running as a full node (default) archive node (retaining all historical states) or a light node (retrieving data live). It can be used by other processes as a gateway into the Webchain network via JSON-RPC endpoints exposed on top of HTTP, WebSocket and/or IPC transport layers. Please see our [Command Line Options](https://github.com/ethereumproject/go-ethereum/wiki/Command-Line-Options) wiki page for details. |
+| `abigen` | Source code generator to convert Webchain contract definitions into easy to use, compile-time type-safe Go packages. It operates on plain [Ethereum contract ABIs](https://github.com/ethereumproject/wiki/wiki/Ethereum-Contract-ABI) with expanded functionality if the contract bytecode is also available. However it also accepts Solidity source files, making development much more streamlined. Please see our [Native DApps](https://github.com/ethereumproject/go-ethereum/wiki/Native-DApps-in-Go) wiki page for details. |
 | `bootnode` | Stripped down version of our Webchain client implementation that only takes part in the network node discovery protocol, but does not run any of the higher level application protocols. It can be used as a lightweight bootstrap node to aid in finding peers in private networks. |
 | `disasm` | Bytecode disassembler to convert EVM (Ethereum Virtual Machine) bytecode into more user friendly assembly-like opcodes (e.g. `echo "6001" | disasm`). For details on the individual opcodes, please see pages 22-30 of the [Ethereum Yellow Paper](http://gavwood.com/paper.pdf). |
 | `evm` | Developer utility version of the EVM (Ethereum Virtual Machine) that is capable of running bytecode snippets within a configurable environment and execution mode. Its purpose is to allow insolated, fine graned debugging of EVM opcodes (e.g. `evm --code 60ff60ff --debug`). |
-| `rlpdump` | Developer utility tool to convert binary RLP ([Recursive Length Prefix](https://github.com/ethereumproject/wiki/wiki/RLP)) dumps (data encoding used by the Webchain protocol both network as well as consensus wise) to user friendlier hierarchical representation (e.g. `rlpdump --hex CE0183FFFFFFC4C304050583616263`). |
+| `gethrpctest` | Developer utility tool to support our [ethereum/rpc-test](https://github.com/etclabscore/rpc-tests) test suite which validates baseline conformity to the [Ethereum JSON RPC](https://github.com/ethereumproject/wiki/wiki/JSON-RPC) specs. Please see the [test suite's readme](https://github.com/etclabscore/rpc-tests/blob/master/README.md) for details. |
+| `rlpdump` | Developer utility tool to convert binary RLP ([Recursive Length Prefix](https://github.com/ethereumproject/wiki/wiki/RLP)) dumps (data encoding used by the Ethereum protocol both network as well as consensus wise) to user friendlier hierarchical representation (e.g. `rlpdump --hex CE0183FFFFFFC4C304050583616263`). |
 
-## :green_book: Webchaind: the basics
+## :green_book: Getting started with Webchain
 
 ### Data directory
-By default, webchaind will store all node and blockchain data in a __parent directory__ depending on your OS:
+By default, webchaind will store all node and blockchain data in a parent directory depending on your OS:
+
 - Linux: `$HOME/.webchain/`
 - Mac: `$HOME/Library/Webchain/`
 - Windows: `$HOME/AppData/Roaming/Webchain/`
 
-__You can specify this directory__ with `--data-dir=$HOME/id/rather/put/it/here`.
+You can specify this directory with `--data-dir=$HOME/id/rather/put/it/here`.
 
-Within this parent directory, webchaind will use a __/subdirectory__ to hold data for each network you run. The defaults are:
+Within this parent directory, webchaind will use a `/subdirectory` to hold data for each network you run. The defaults are:
 
  - `/mainnet` for the Mainnet
  - `/morden` for the Morden Testnet
 
-__You can specify this subdirectory__ with `--chain=mycustomnet`.
-
-### Full node on the main Webchain network
-
+### Run a full node
 ```
 $ webchaind
 ```
 
-It's that easy! This will establish an WEB blockchain node and download ("sync") the full blocks for the entirety of the WEB blockchain. __However__, before you go ahead with plain ol' `webchaind`, we would encourage reviewing the following section...
+It's that easy! This will establish a WEB blockchain node, download, and verify the full blocks for the entirety of the WEB blockchain. However, before you go ahead with plain ol' `webchaind`, we would encourage reviewing the following section.
 
-#### :speedboat: `--fast`
-
+### :speedboat: Fast Synchronization
 The most common scenario is users wanting to simply interact with the Webchain network: create accounts; transfer funds; deploy and interact with contracts, and mine. For this particular use-case the user doesn't care about years-old historical data, so we can _fast-sync_ to the current state of the network. To do so:
 
 ```
@@ -126,7 +96,7 @@ $ webchaind --fast
 
 Using webchaind in fast sync mode causes it to download only block _state_ data -- leaving out bulky transaction records -- which avoids a lot of CPU and memory intensive processing.
 
-Fast sync will be automatically __disabled__ (and full sync enabled) when:
+Fast sync will be automatically disabled (and full sync enabled) when:
 
 - your chain database contains *any* full blocks
 - your node has synced up to the current head of the network blockchain
@@ -135,9 +105,8 @@ In case of using `--mine` together with `--fast`, webchaind will operate as desc
 
 *Note:* To further increase webchaind performace, you can use a `--cache=2054` flag to bump the memory allowance of the database (e.g. 2054MB) which can significantly improve sync times, especially for HDD users. This flag is optional and you can set it as high or as low as you'd like, though we'd recommend the 1GB - 2GB range.
 
-### Create or manage account(s)
-
-[Webchaind](https://github.com/webchain-network/webchaind/releases) is able to create, import, update, unlock, and otherwise manage your private (encrypted) key files. Key files are in JSON format and, by default, stored in the respective chain folder's `/keystore` directory; you can specify a custom location with the `--keystore` flag.
+### Create and manage accounts
+Webchaind is able to create, import, update, unlock, and otherwise manage your private (encrypted) key files. Key files are in JSON format and, by default, stored in the respective chain folder's `/keystore` directory; you can specify a custom location with the `--keystore` flag.
 
 ```
 $ webchaind account new
@@ -188,8 +157,7 @@ For a comprehensive list of command line options, please consult our [CLI Wiki p
 ## :orange_book: Webchaind: developing and advanced useage
 
 ### Morden Testnet
-If you'd like to play around with creating Webchain contracts, you
-almost certainly would like to do that without any real money involved until you get the hang of the entire system. In other words, instead of attaching to the main network, you want to join the **test** network with your node, which is fully equivalent to the main network, but with play-Ether only.
+If you'd like to play around with creating Webchain contracts, you almost certainly would like to do that without any real money involved until you get the hang of the entire system. In other words, instead of attaching to the main network, you want to join the **test** network with your node, which is fully equivalent to the main network, but with play-WEB only.
 
 ```
 $ webchaind --chain=morden --fast console
@@ -208,9 +176,8 @@ You may also optionally use `--testnet` or `--chain=testnet` to enable this conf
 will by default correctly separate the two networks and will not make any accounts available between them.*
 
 ### Programatically interfacing webchaind nodes
-
 As a developer, sooner rather than later you'll want to start interacting with webchaind and the Webchain network via your own programs and not manually through the console. To aid this, webchaind has built in support for a JSON-RPC based APIs ([standard APIs](https://github.com/ethereumproject/wiki/wiki/JSON-RPC) and
-[Webchaind specific APIs](https://github.com/webchain-network/webchaind/wiki/Management-APIs)). These can be exposed via HTTP, WebSockets and IPC (unix sockets on unix based platroms, and named pipes on Windows).
+[Webchaind specific APIs](https://github.com/ethereumproject/go-ethereum/wiki/Management-APIs)). These can be exposed via HTTP, WebSockets and IPC (unix sockets on unix based platroms, and named pipes on Windows).
 
 The IPC interface is enabled by default and exposes all the APIs supported by webchaind, whereas the HTTP and WS interfaces need to manually be enabled and only expose a subset of APIs due to security reasons. These can be turned on/off and configured as you'd expect.
 
@@ -232,10 +199,81 @@ HTTP based JSON-RPC API options:
 
 You'll need to use your own programming environments' capabilities (libraries, tools, etc) to connect via HTTP, WS or IPC to a webchaind node configured with the above flags and you'll need to speak [JSON-RPC](http://www.jsonrpc.org/specification) on all transports. You can reuse the same connection for multiple requests!
 
-> Note: Please understand the security implications of opening up an HTTP/WS based transport before doing so! Hackers on the internet are actively trying to subvert Webchain nodes with exposed APIs! Further, all browser tabs can access locally running webservers, so malicious webpages could try to subvert locally available APIs!*
+> Note: Please understand the security implications of opening up an HTTP/WS based transport before doing so! Further, all browser tabs can access locally running webservers, so malicious webpages could try to subvert locally available APIs!*
 
-## Contribution
+### Operating a private/custom network
+You are now able to configure a private chain by specifying an __external chain configuration__ JSON file, which includes necessary genesis block data as well as feature configurations for protocol forks, bootnodes, and chainID.
 
+Please find full [example  external configuration files representing the Mainnet and Morden Testnet specs in the /config subdirectory of this repo](). You can use either of these files as a starting point for your own customizations.
+
+It is important for a private network that all nodes use compatible chains. In the case of custom chain configuration, the chain configuration file (`chain.json`) should be equivalent for each node.
+
+#### Define external chain configuration
+Specifying an external chain configuration file will allow fine-grained control over a custom blockchain/network configuration, including the genesis state and extending through bootnodes and fork-based protocol upgrades.
+
+```shell
+$ webchaind --chain=morden dump-chain-config <datadir>/customnet/chain.json
+$ sed s/mainnet/customnet/ <datadir>/customnet/chain.json
+$ vi <datadir>/customnet/chain.json # make your custom edits
+$ webchaind --chain=customnet [--flags] [command]
+```
+
+The external chain configuration file specifies valid settings for the following top-level fields:
+
+| JSON Key | Notes |
+| --- | --- |
+| `chainID` |  Chain identity. Determines local __/subdir__ for chain data, with required `chain.json` located in it. It is required, but must not be identical for each node. Please note that this is _not_ the chainID validation introduced in _EIP-155_; that is configured as a protocal upgrade within `forks.features`. |
+| `name` | _Optional_. Human readable name, ie _Webchain Mainnet_, _Morden Testnet._ |
+| `state.startingNonce` | _Optional_. Initialize state db with a custom nonce. |
+| `network` | Determines Network ID to identify valid peers. |
+| `consensus` | _Optional_. Proof of work algorithm to use, either "lyra2v2" |
+| `genesis` | Determines __genesis state__. If running the node for the first time, it will write the genesis block. If configuring an existing chain database with a different genesis block, it will overwrite it. |
+| `chainConfig` | Determines configuration for fork-based __protocol upgrades__, ie _EIP-150_, _EIP-155_, _EIP-160_, _ECIP-1010_, etc ;-). Subkeys are `forks` and `badHashes`. |
+| `bootstrap` | _Optional_. Determines __bootstrap nodes__ in [enode format](https://github.com/ethereumproject/wiki/wiki/enode-url-format). |
+| `include` | _Optional_. Other configuration files to include. Paths can be relative (to the config file with `include` field, or absolute). Each of configuration files has the same structure as "main" configuration. Included files are processed after the "main" configuration in the same order as specified in the array; values processed later overwrite the previously defined ones. |
+
+*Fields `name`, `state.startingNonce`, and `consensus` are optional. Webchaind will panic if any required field is missing, invalid, or in conflict with another flag. This renders `--chain` __incompatible__ with `--testnet`. It remains __compatible__ with `--data-dir`.*
+
+To learn more about external chain configuration, please visit the [External Command Line Options Wiki page](https://github.com/ethereumproject/go-ethereum/wiki/Command-Line-Options).
+
+##### Create the rendezvous point
+Once all participating nodes have been initialized to the desired genesis state, you'll need to start a __bootstrap node__ that others can use to find each other in your network and/or over the internet. The clean way is to configure and run a dedicated bootnode:
+
+```
+$ bootnode --genkey=boot.key
+$ bootnode --nodekey=boot.key
+```
+
+With the bootnode online, it will display an `enode` URL that other nodes can use to connect to it and exchange peer information. Make sure to replace the
+displayed IP address information (most probably `[::]`) with your externally accessible IP to get the actual `enode` URL.
+
+*Note: You could also use a full fledged Webchaind node as a bootnode, but it's the less recommended way.*
+
+To learn more about enodes and enode format, visit the [Enode Wiki page](https://github.com/ethereumproject/wiki/wiki/enode-url-format).
+
+##### Starting up your member nodes
+With the bootnode operational and externally reachable (you can try `telnet <ip> <port>` to ensure it's indeed reachable), start every subsequent webchaind node pointed to the bootnode for peer discovery via the `--bootnodes` flag. It will probably be desirable to keep private network data separate from defaults; to do so, specify a custom `--datadir` and/or `--chain` flag.
+
+```
+$ webchaind --datadir=path/to/custom/data/folder \
+       --chain=kittynet \
+       --bootnodes=<bootnode-enode-url-from-above>
+```
+
+*Note: Since your network will be completely cut off from the main and test networks, you'll also need to configure a miner to process transactions and create new blocks for you.*
+
+#### Running a private miner
+In a private network setting, a single CPU miner instance is more than enough for practical purposes as it can produce a stable stream of blocks at the correct intervals without needing heavy resources (consider running on a single thread, no need for multiple ones either). To start a webchaind instance for mining, run it with all your usual flags, extended by:
+
+```
+$ webchaind <usual-flags> --mine --minerthreads=1 --etherbase=0x0000000000000000000000000000000000000000
+```
+
+Which will start mining blocks and transactions on a single CPU thread, crediting all proceedings to the account specified by `--etherbase`. You can further tune the mining by changing the default gas limit blocks converge to (`--targetgaslimit`) and the price transactions are accepted at (`--gasprice`).
+
+For more information about managing accounts, please see the [Managing Accounts Wiki page](https://github.com/ethereumproject/go-ethereum/wiki/Managing-Accounts).
+
+## :muscle: Contribution
 Thank you for considering to help out with the source code!
 
 The core values of democratic engagement, transparency, and integrity run deep with us. We welcome contributions from everyone, and are grateful for even the smallest of fixes.  :clap:
@@ -244,7 +282,7 @@ If you'd like to contribute to webchaind, please fork, fix, commit and send a pu
 
 Please see the [Wiki](https://github.com/webchain-network/webchaind/wiki) for more details on configuring your environment, managing project dependencies, and testing procedures.
 
-## License
+## :love_letter: License
 
 The webchaind library (i.e. all code outside of the `cmd` directory) is licensed under the [GNU Lesser General Public License v3.0](http://www.gnu.org/licenses/lgpl-3.0.en.html), also included in our repository in the `COPYING.LESSER` file.
 

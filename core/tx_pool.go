@@ -128,15 +128,22 @@ func (pool *TxPool) eventLoop() {
 	}
 }
 
+func (pool *TxPool) lockedReset() {
+	pool.mu.Lock()
+	defer pool.mu.Unlock()
+
+	pool.resetState()
+}
+
 func (pool *TxPool) resetState() {
 	currentState, err := pool.currentState()
 	if err != nil {
-		glog.V(logger.Info).Infoln("failed to get current state: %v", err)
+		glog.V(logger.Info).Infof("failed to get current state: %v", err)
 		return
 	}
 	managedState := state.ManageState(currentState)
 	if err != nil {
-		glog.V(logger.Info).Infoln("failed to get managed state: %v", err)
+		glog.V(logger.Info).Infof("failed to get managed state: %v", err)
 		return
 	}
 	pool.pendingState = managedState
@@ -294,7 +301,7 @@ func (pool *TxPool) validateTx(tx *types.Transaction) (e error) {
 		return
 	}
 
-	intrGas := IntrinsicGas(tx.Data(), MessageCreatesContract(tx), pool.homestead)
+	intrGas := IntrinsicGas(tx.Data(), tx.To() == nil, pool.homestead)
 	if tx.Gas().Cmp(intrGas) < 0 {
 		e = ErrIntrinsicGas
 		return
@@ -337,7 +344,7 @@ func (self *TxPool) add(tx *types.Transaction) error {
 		).Send(mlogTxPool)
 	}
 	if glog.V(logger.Debug) {
-		glog.Infof("(t) %x => %s (%v) %x\n", from, toName, tx.Value, hash)
+		glog.Infof("(t) %x => %s (%v) %x\n", from, toName, tx.Value(), hash)
 	}
 
 	return nil
@@ -561,7 +568,7 @@ func (pool *TxPool) checkQueue() {
 func (pool *TxPool) validatePool() {
 	state, err := pool.currentState()
 	if err != nil {
-		glog.V(logger.Info).Infoln("failed to get current state: %v", err)
+		glog.V(logger.Info).Infof("failed to get current state: %v", err)
 		return
 	}
 	balanceCache := make(map[common.Address]*big.Int)

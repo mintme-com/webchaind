@@ -1,6 +1,6 @@
 package params
 
-//import "math/big"
+import "math/big"
 
 const (
 	QuadCoeffDiv uint64 = 512 // Divisor for the quadratic particle of the memory cost equation.
@@ -10,7 +10,8 @@ const (
 )
 
 var (
-	//DifficultyBoundDivisor = big.NewInt(2048) // The bound divisor of the difficulty, used in the update calculations.
+	DifficultyBoundDivisor = big.NewInt(200) // The bound divisor of the difficulty, used in the update calculations.
 
-	//MinimumDifficulty = big.NewInt(131072) // The minimum that the difficulty may ever be.
+	MinimumDifficulty = big.NewInt(10000) // The minimum that the difficulty may ever be.
+	CreateDataGas     = big.NewInt(200)
 )

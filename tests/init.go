@@ -22,6 +22,7 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
+	"math/big"
 	"os"
 	"path/filepath"
 
@@ -35,6 +36,9 @@ var (
 	transactionTestDir = filepath.Join(baseDir, "TransactionTests")
 	vmTestDir          = filepath.Join(baseDir, "VMTests")
 	rlpTestDir         = filepath.Join(baseDir, "RLPTests")
+	ethDir             = filepath.Join(".", "testData")
+	ethGeneralStateDir = filepath.Join(ethDir, "GeneralStateTests")
+	ethBasicTestDir    = filepath.Join(ethDir, "BasicTests")
 
 	BlockSkipTests = initBlockSkipTests()
 
@@ -49,7 +53,7 @@ var (
 )
 
 func initBlockSkipTests() []string {
-	if core.UseSputnikVM {
+	if core.UseSputnikVM == "true" {
 		return []string{
 			// These tests are not valid, as they are out of scope for RLP and
 			// the consensus protocol.
@@ -119,4 +123,77 @@ func findLine(data []byte, offset int64) (line int) {
 		}
 	}
 	return
+}
+
+// Forks table defines supported forks and their chain config.
+var Forks = map[string]RuleSet{
+	"Frontier": {},
+	"Homestead": {
+		HomesteadBlock: big.NewInt(0),
+	},
+	"EIP150": {
+		HomesteadBlock:           big.NewInt(0),
+		HomesteadGasRepriceBlock: big.NewInt(0),
+	},
+	"Byzantium": {
+		HomesteadBlock:           big.NewInt(0),
+		HomesteadGasRepriceBlock: big.NewInt(0),
+		DiehardBlock:             big.NewInt(0),
+		Hardfork2Block:           big.NewInt(0),
+		AtlantisBlock:            big.NewInt(0),
+	},
+}
+
+// ChainConfigs table used to map configs to difficulty test files
+var ChainConfigs = map[string]core.ChainConfig{
+	// "difficulty":              {},
+	"difficultyFrontier.json": {},
+	"difficultyHomestead.json": {
+		Forks: []*core.Fork{
+			{
+				Name:  "Homestead",
+				Block: big.NewInt(0),
+				Features: []*core.ForkFeature{
+					{
+						ID: "difficulty",
+						Options: core.ChainFeatureConfigOptions{
+							"type": "homestead",
+						},
+					},
+					{
+						ID: "gastable",
+						Options: core.ChainFeatureConfigOptions{
+							"type": "homestead",
+						},
+					},
+				},
+			},
+		},
+	},
+	"difficultyByzantium.json": {
+		Forks: []*core.Fork{
+			{
+				Name:  "Atlantis",
+				Block: big.NewInt(0),
+				Features: []*core.ForkFeature{
+					{
+						ID: "difficulty",
+						Options: core.ChainFeatureConfigOptions{
+							"type":   "atlantis",
+							"length": 3000000,
+						},
+					},
+				},
+			},
+		},
+	},
+}
+
+// UnsupportedForkError is returned when a test requests a fork that isn't implemented.
+type UnsupportedForkError struct {
+	Name string
+}
+
+func (e UnsupportedForkError) Error() string {
+	return fmt.Sprintf("unsupported fork %q", e.Name)
 }

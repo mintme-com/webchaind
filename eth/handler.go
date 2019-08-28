@@ -112,10 +112,25 @@ func NewProtocolManager(config *core.ChainConfig, mode downloader.SyncMode, netw
 		txsyncCh:    make(chan *txsync),
 		quitSync:    make(chan struct{}),
 	}
+
 	// Figure out whether to allow fast sync or not
 	if mode == downloader.FastSync && blockchain.CurrentBlock().NumberU64() > 0 {
 		glog.V(logger.Warn).Infoln("Blockchain not empty, fast sync disabled")
 		glog.D(logger.Warn).Warnln("Blockchain not empty. Fast sync disabled.")
+		mode = downloader.FullSync
+	}
+	// ForceFullSync is used only here to ensure that fast sync is not enabled
+	if mode != downloader.ForceFullSync && blockchain.CurrentBlock().NumberU64() == 0 && blockchain.CurrentFastBlock().NumberU64() > 0 {
+		// The database seems empty as the current block is the genesis. Yet the fast
+		// block is ahead, so fast sync was enabled for this node at a certain point.
+		// The only scenario where this can happen is if the user manually (or via a
+		// bad block) rolled back a fast sync node below the sync point. In this case
+		// however it's safe to reenable fast sync.
+		atomic.StoreUint32(&manager.fastSync, 1)
+		mode = downloader.FastSync
+	}
+	// Forced full sync, is actually "normal" full sync
+	if mode == downloader.ForceFullSync {
 		mode = downloader.FullSync
 	}
 	if mode == downloader.FastSync {
@@ -171,8 +186,8 @@ func NewProtocolManager(config *core.ChainConfig, mode downloader.SyncMode, netw
 	}
 	inserter := func(blocks types.Blocks) *core.ChainInsertResult {
 		if atomic.LoadUint32(&manager.fastSync) == 1 {
-			glog.V(logger.Warn).Warnf("Discarded bad propagated block", "number", blocks[0].Number(), "hash", blocks[0].Hash().Hex()[:9])
-			glog.D(logger.Warn).Warnf("Discarded bad propagated block", "number", blocks[0].Number(), "hash", blocks[0].Hash().Hex()[:9])
+			glog.V(logger.Warn).Warnln("Discarded bad propagated block", "number", blocks[0].Number(), "hash", blocks[0].Hash().Hex()[:9])
+			glog.D(logger.Warn).Warnln("Discarded bad propagated block", "number", blocks[0].Number(), "hash", blocks[0].Hash().Hex()[:9])
 		}
 		// Mark initial sync done on any fetcher import
 		atomic.StoreUint32(&manager.acceptsTxs, 1)
