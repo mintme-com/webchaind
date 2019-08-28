@@ -22,7 +22,7 @@ import (
 	"net"
 	"time"
 
-	winio "github.com/microsoft/go-winio"
+	winio "github.com/Microsoft/go-winio"
 )
 
 // ipcListen will create a named pipe on the given endpoint.
