@@ -1,9 +1,10 @@
 # Build webchaind in a stock Go builder container
-FROM golang:1.12-stretch as builder
+FROM golang:1.12-alpine as builder
 
-ENV DEBIAN_FRONTEND noninteractive
+RUN apk add --no-cache make gcc musl-dev linux-headers git bash cargo
 
-RUN apt-get update && apt-get install -y gcc make git
+ENV GOPATH=/go
+RUN mkdir -p /go/src/github.com/webchain-network/webchaind
 
 ADD . /go/src/github.com/webchain-network/webchaind
 
@@ -11,10 +12,10 @@ WORKDIR /go/src/github.com/webchain-network/webchaind
 
 RUN make cmd/webchaind
 
-# Pull webchaind into a second stage deploy ubuntu container
-FROM ubuntu:18.04
+# Pull webchaind into a second stage deploy alpine container
+FROM alpine:latest
 
-RUN apt-get update && apt-get install -y openssh-server iputils-ping iperf3 && apt-get clean
+RUN apk add --no-cache ca-certificates rust-stdlib
 COPY --from=builder /go/src/github.com/webchain-network/webchaind/bin/webchaind /usr/local/bin/
 
 EXPOSE 39573 31440 31440/udp
