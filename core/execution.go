@@ -253,7 +253,7 @@ func Create(env vm.Environment, caller vm.ContractRef, code []byte, gas, gasPric
 		to       = env.Db().CreateAccount(address)
 	)
 
-	if env.RuleSet().IsAtlantis(env.BlockNumber()) {
+	if env.RuleSet().IsHardfork2(env.BlockNumber()) {
 		env.Db().SetNonce(address, state.StartingNonce+1)
 	}
 
