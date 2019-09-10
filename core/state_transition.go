@@ -140,6 +140,12 @@ func (st *StateTransition) to() common.Address {
 	if st.msg == nil || st.msg.To() == nil /* contract creation */ {
 		return common.Address{}
 	}
+
+	to := st.msg.To()
+	if !st.state.Exist(*to) && !st.env.RuleSet().IsAtlantis(st.env.BlockNumber()) { // for backward compatibility with webchain before full Atlantis hardfork
+		st.state.CreateAccount(*to)
+    }
+
 	return *st.msg.To()
 }
 
