@@ -199,12 +199,18 @@ func GetBlockWinnerRewardForUnclesByEra(era *big.Int, uncles []*types.Header) *b
 
 // GetRewardByEra gets a block reward at disinflation rate.
 // Constants MaxBlockReward, DisinflationRateQuotient, and DisinflationRateDivisor assumed.
-func GetBlockWinnerRewardByEra(era *big.Int) *big.Int {
+func GetBlockWinnerRewardByEra(eraOrig *big.Int) *big.Int {
 	MaximumBlockReward := big.NewInt(5e+18) // 5 WEB
 	MaximumBlockReward.Mul(MaximumBlockReward, big.NewInt(10)) // 50 WEB
 
+	era := new(big.Int).Set(eraOrig)
+
 	if era.Cmp(big.NewInt(0)) == 0 {
 		return new(big.Int).Set(MaximumBlockReward)
+	}
+
+	if era.Cmp(big.NewInt(45)) >= 0 {
+		era.Add(era, big.NewInt(162)) // skip 162 eras due to halving
 	}
 
 	// MaxBlockReward _r_ * (249/250)**era == MaxBlockReward * (249**era) / (250**era)
@@ -217,6 +223,15 @@ func GetBlockWinnerRewardByEra(era *big.Int) *big.Int {
 
 	r.Mul(MaximumBlockReward, q)
 	r.Div(r, d)
+
+	if era.Cmp(big.NewInt(33)) >= 0 && era.Cmp(big.NewInt(45)) < 0 {
+		// r - (r/2/(45-33) * (era-33+1))
+		r = GetBlockWinnerRewardByEra(big.NewInt(33-1))
+		r2 := new(big.Int)
+		r2.Div(r, big.NewInt(2*(45-33)))
+		r2.Mul(r2, big.NewInt(era.Int64()-33+1))
+		r.Sub(r, r2)
+	}
 
 	return r
 }
