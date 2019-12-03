@@ -210,7 +210,7 @@ func GetBlockWinnerRewardByEra(eraOrig *big.Int) *big.Int {
 	}
 
 	if era.Cmp(big.NewInt(45)) >= 0 {
-		era.Add(era, big.NewInt(162)) // skip 162 eras due to halving
+		era.Add(era, big.NewInt(475)) // skip 475 eras due to reward decrease
 	}
 
 	// MaxBlockReward _r_ * (249/250)**era == MaxBlockReward * (249**era) / (250**era)
@@ -224,7 +224,10 @@ func GetBlockWinnerRewardByEra(eraOrig *big.Int) *big.Int {
 	r.Mul(MaximumBlockReward, q)
 	r.Div(r, d)
 
-	if era.Cmp(big.NewInt(33)) >= 0 && era.Cmp(big.NewInt(45)) < 0 {
+	if era.Cmp(big.NewInt(36)) >= 0 && era.Cmp(big.NewInt(45)) < 0 {
+		rewards := []int64{2000, 1300, 1200, 1100, 1000, 900, 800, 700, 625}
+		r.Mul(big.NewInt(rewards[era.Int64()-36]), big.NewInt(10000000000000000))
+	} else if era.Cmp(big.NewInt(33)) >= 0 && era.Cmp(big.NewInt(36)) < 0 {
 		// r - (r/2/(45-33) * (era-33+1))
 		r = GetBlockWinnerRewardByEra(big.NewInt(33-1))
 		r2 := new(big.Int)

@@ -78,6 +78,10 @@
             {
                 "name": "Halving",
                 "block": 3300001
+            },
+            {
+                "name": "Reward",
+                "block": 3600001
             }
         ],
         "badHashes": [
