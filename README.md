@@ -1,6 +1,6 @@
 ## Webchaind
 
-Official Go language implementation of the Webchain daemon.
+Official Go language implementation of the MintMe.com Coin daemon.
 
 ## Install Webchaind
 
@@ -56,15 +56,15 @@ This repository includes several wrappers/executables found in the `cmd` directo
 
 | Command    | Description |
 |:----------:|-------------|
-| **`webchaind`** | The main Webchain command-line client. It is the entry point into the Webchain network (main-, test-, or private networks), capable of running as a full node (default) archive node (retaining all historical states) or a light node (retrieving data live). It can be used by other processes as a gateway into the Webchain network via JSON-RPC endpoints exposed on top of HTTP, WebSocket and/or IPC transport layers. Please see our [Command Line Options](https://github.com/ethereumproject/go-ethereum/wiki/Command-Line-Options) wiki page for details. |
-| `abigen` | Source code generator to convert Webchain contract definitions into easy to use, compile-time type-safe Go packages. It operates on plain [Ethereum contract ABIs](https://github.com/ethereumproject/wiki/wiki/Ethereum-Contract-ABI) with expanded functionality if the contract bytecode is also available. However it also accepts Solidity source files, making development much more streamlined. Please see our [Native DApps](https://github.com/ethereumproject/go-ethereum/wiki/Native-DApps-in-Go) wiki page for details. |
-| `bootnode` | Stripped down version of our Webchain client implementation that only takes part in the network node discovery protocol, but does not run any of the higher level application protocols. It can be used as a lightweight bootstrap node to aid in finding peers in private networks. |
+| **`webchaind`** | The main MintMe Coin command-line client. It is the entry point into the MintMe Coin network (main-, test-, or private networks), capable of running as a full node (default) archive node (retaining all historical states) or a light node (retrieving data live). It can be used by other processes as a gateway into the MintMe Coin via JSON-RPC endpoints exposed on top of HTTP, WebSocket and/or IPC transport layers. Please see our [Command Line Options](https://github.com/ethereumproject/go-ethereum/wiki/Command-Line-Options) wiki page for details. |
+| `abigen` | Source code generator to convert MintMe Coin contract definitions into easy to use, compile-time type-safe Go packages. It operates on plain [Ethereum contract ABIs](https://github.com/ethereumproject/wiki/wiki/Ethereum-Contract-ABI) with expanded functionality if the contract bytecode is also available. However it also accepts Solidity source files, making development much more streamlined. Please see our [Native DApps](https://github.com/ethereumproject/go-ethereum/wiki/Native-DApps-in-Go) wiki page for details. |
+| `bootnode` | Stripped down version of our MintMe Coin client implementation that only takes part in the network node discovery protocol, but does not run any of the higher level application protocols. It can be used as a lightweight bootstrap node to aid in finding peers in private networks. |
 | `disasm` | Bytecode disassembler to convert EVM (Ethereum Virtual Machine) bytecode into more user friendly assembly-like opcodes (e.g. `echo "6001" | disasm`). For details on the individual opcodes, please see pages 22-30 of the [Ethereum Yellow Paper](http://gavwood.com/paper.pdf). |
 | `evm` | Developer utility version of the EVM (Ethereum Virtual Machine) that is capable of running bytecode snippets within a configurable environment and execution mode. Its purpose is to allow insolated, fine graned debugging of EVM opcodes (e.g. `evm --code 60ff60ff --debug`). |
 | `gethrpctest` | Developer utility tool to support our [ethereum/rpc-test](https://github.com/etclabscore/rpc-tests) test suite which validates baseline conformity to the [Ethereum JSON RPC](https://github.com/ethereumproject/wiki/wiki/JSON-RPC) specs. Please see the [test suite's readme](https://github.com/etclabscore/rpc-tests/blob/master/README.md) for details. |
 | `rlpdump` | Developer utility tool to convert binary RLP ([Recursive Length Prefix](https://github.com/ethereumproject/wiki/wiki/RLP)) dumps (data encoding used by the Ethereum protocol both network as well as consensus wise) to user friendlier hierarchical representation (e.g. `rlpdump --hex CE0183FFFFFFC4C304050583616263`). |
 
-## :green_book: Getting started with Webchain
+## :green_book: Getting started with MintMe Coin
 
 ### Data directory
 By default, webchaind will store all node and blockchain data in a parent directory depending on your OS:
