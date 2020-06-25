@@ -82,6 +82,10 @@
             {
                 "name": "Reward",
                 "block": 3600001
+            },
+            {
+                "name": "Reward2",
+                "block": 5000001
             }
         ],
         "badHashes": [
