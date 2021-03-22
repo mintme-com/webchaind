@@ -93,6 +93,15 @@ var makeMlogDocCommand = cli.Command{
 	},
 }
 
+var exportBlockchainCommand = cli.Command{
+	Action: exportBlockchain,
+	Name:   "export-blockchain",
+	Usage:  "Export blockchain",
+	Description: `
+	Exports current blockchain state into file.
+			`,
+}
+
 func makeCLIApp() (app *cli.App) {
 	app = cli.NewApp()
 	app.Name = filepath.Base(os.Args[0])
@@ -123,6 +132,7 @@ func makeCLIApp() (app *cli.App) {
 		versionCommand,
 		makeMlogDocCommand,
 		buildAddrTxIndexCommand,
+		exportBlockchainCommand,
 	}
 
 	app.Flags = []cli.Flag{

@@ -960,3 +960,51 @@ func resetChaindata(ctx *cli.Context) error {
 	}
 	return nil
 }
+
+func exportBlockchain(ctx *cli.Context) error {
+	fmt.Printf("Exporting blockchain...\n")
+
+	accountsToProcess := make(map[common.Address]bool)
+
+	chain, _ := MakeChain(ctx)
+
+	stateDb, err := chain.State()
+	if err != nil {
+		return errors.New("can't get state DB")
+	}
+
+	currHeight := chain.CurrentHeader().Number.Uint64()
+	for i := uint64(0); i < currHeight; i++ {
+		block := chain.GetBlockByNumber(i)
+		if block == nil {
+			return errors.New(fmt.Sprintf("can't get block %v", i))
+		}
+
+		if i % 100000 == 0 {
+			fmt.Printf("Block: %v\n", i)
+		}
+
+		for _, t := range block.Transactions() {
+			if t.To() != nil {
+				addr := *t.To()
+				accountsToProcess[addr] = true
+			}
+		}
+	}
+
+	fmt.Printf("Found %v accounts", len(accountsToProcess))
+
+	keys := make([]common.Address, 0, len(accountsToProcess))
+	for k := range accountsToProcess {
+		keys = append(keys, k)
+	}
+
+	dump := stateDb.RawDump(keys)
+	for _, k := range keys {
+		data := dump.Accounts[k.Hex()[2:]]
+		fmt.Printf("%v: Balance: %v, Code: %v, Storage: %v, Nonce: %v\n", k.Hex(), data.Balance, data.Code, data.Storage, data.Nonce)
+		// TODO: skip empty accounts (balance == 0, code is empty, storage is empty)
+	}
+
+	return nil
+}
