@@ -22,6 +22,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"math/big"
 	"os"
 	"os/signal"
 	"path/filepath"
@@ -962,9 +963,7 @@ func resetChaindata(ctx *cli.Context) error {
 }
 
 func exportBlockchain(ctx *cli.Context) error {
-	fmt.Printf("Exporting blockchain...\n")
-
-	accountsToProcess := make(map[common.Address]bool)
+	fmt.Fprintf(os.Stderr, "Exporting blockchain...\n")
 
 	chain, _ := MakeChain(ctx)
 
@@ -973,38 +972,52 @@ func exportBlockchain(ctx *cli.Context) error {
 		return errors.New("can't get state DB")
 	}
 
-	currHeight := chain.CurrentHeader().Number.Uint64()
-	for i := uint64(0); i < currHeight; i++ {
-		block := chain.GetBlockByNumber(i)
-		if block == nil {
-			return errors.New(fmt.Sprintf("can't get block %v", i))
-		}
-
-		if i % 100000 == 0 {
-			fmt.Printf("Block: %v\n", i)
-		}
-
-		for _, t := range block.Transactions() {
-			if t.To() != nil {
-				addr := *t.To()
-				accountsToProcess[addr] = true
-			}
-		}
+	type OutDataStruct struct {
+		Addr *big.Int
+		Balance *big.Int
+		Code []byte
+		Storage []string
+		//Nonce uint64
 	}
 
-	fmt.Printf("Found %v accounts", len(accountsToProcess))
+	var outData []OutDataStruct
+	skipped := uint64(0)
 
-	keys := make([]common.Address, 0, len(accountsToProcess))
-	for k := range accountsToProcess {
-		keys = append(keys, k)
+	dump := stateDb.RawDump_CoreGeth()
+	for addr, data := range dump.Accounts {
+		balanceInt := big.NewInt(0)
+		balanceInt.SetString(data.Balance, 10)
+
+		var storageArr []string
+
+		for k, v := range data.Storage {
+			storageArr = append(storageArr, k, v)
+		}
+
+		if balanceInt.Sign() == 0 && len(data.Code) == 0 && len(data.Storage) == 0 /*&& data.Nonce == 0*/ {
+			skipped++
+			continue
+		}
+
+		outData = append(outData, OutDataStruct{
+			Addr:    common.HexToAddress(addr).Big(),
+			Balance: balanceInt,
+			Code:    common.Hex2Bytes(data.Code),
+			Storage: storageArr,
+			//Nonce:   data.Nonce,
+		})
 	}
 
-	dump := stateDb.RawDump(keys)
-	for _, k := range keys {
-		data := dump.Accounts[k.Hex()[2:]]
-		fmt.Printf("%v: Balance: %v, Code: %v, Storage: %v, Nonce: %v\n", k.Hex(), data.Balance, data.Code, data.Storage, data.Nonce)
-		// TODO: skip empty accounts (balance == 0, code is empty, storage is empty)
+	fmt.Fprintf(os.Stderr, "Skipped %v empty accounts\n", skipped)
+
+	outStr, err := rlp.EncodeToBytes(outData)
+	if err != nil {
+		return err
 	}
+
+	out := strconv.QuoteToASCII(string(outStr))
+
+	fmt.Printf("package params\n\nvar allocMintme = %v", out) // TODO
 
 	return nil
 }
