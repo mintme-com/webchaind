@@ -219,6 +219,10 @@ func (v *BlockValidator) ValidateHeader(header, parent *types.Header, checkPow b
 //
 // See YP section 4.3.4. "Block Header Validity"
 func ValidateHeader(config *ChainConfig, pow pow.PoW, header *types.Header, parent *types.Header, checkPow, uncle bool) error {
+	if header.Number.Cmp(big.NewInt(int64(config.GetStopBlock()))) > 0 {
+		return fmt.Errorf("block number %d exceeds Stop block (%d)", header.Number.Uint64(), config.GetStopBlock())
+	}
+
 	if len(header.Extra) > types.HeaderExtraMax {
 		return fmt.Errorf("extra data size %d exceeds limit of %d", len(header.Extra), types.HeaderExtraMax)
 	}
