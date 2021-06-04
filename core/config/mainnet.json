@@ -89,7 +89,7 @@
             },
             {
                 "name": "Stop",
-                "block": xxxxxxx
+                "block": 7200000
             }
         ],
         "badHashes": [
