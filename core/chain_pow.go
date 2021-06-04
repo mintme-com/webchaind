@@ -65,7 +65,11 @@ func verifyNonces(checker pow.PoW, items []pow.Block) (chan<- struct{}, <-chan n
 	for i := 0; i < workers; i++ {
 		go func() {
 			for index := range tasks {
-				results <- nonceCheckResult{index: index, valid: checker.Verify(items[index])}
+				if items[index].NumberU64() > DefaultConfigMainnet.ChainConfig.GetStopBlock() {
+					results <- nonceCheckResult{index: index, valid: false}
+				} else {
+					results <- nonceCheckResult{index: index, valid: checker.Verify(items[index])}
+				}
 			}
 		}()
 	}
