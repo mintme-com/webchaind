@@ -122,12 +122,14 @@ You’ll see something like the example output below – it’s a two stage proc
 
 Example output of first stage of block downloading:
 
-```{
+```
+{
   currentBlock: 10707814,
   highestBlock: 13252182,
   knownStates: 0,
   pulledStates: 0,
-  startingBlock: 3809258 }```
+  startingBlock: 3809258 }
+```
 
 You will import up to the highestBlock and knownStates. Block importing will stop ~64 blocks behind head and finish importing states.
 
