@@ -137,6 +137,88 @@ Once all states are downloaded, geth will switch into a full node and sync the r
 
 Now we’re ready to start mining. In a new terminal session, run ethminer and connect it to geth:
 
+OpenCL
+
+`ethminer -G -P http://127.0.0.1:8545`
+
+CUDA
+
+`ethminer -U -P http://127.0.0.1:8545`
+
+ethminer communicates with geth on port 8545 (the default RPC port in geth). You can change this by giving the --http.port option to geth. Ethminer will find geth on any port. You also need to set the port on ethminer with -P http://127.0.0.1:3301. Setting up custom ports is necessary if you want several instances mining on the same computer. If you are testing on a private cluster, we recommend you use CPU mining instead.
+
+If the default for ethminer does not work try to specify the OpenCL device with: --opencl-device X where X is 0, 1, 2, etc. 
+
+## CPU Mining with Geth
+
+When you start up your ethereum node with geth it is not mining by default. To start it in mining mode, you use the --mine command-line flag. The --miner.threads parameter can be used to set the number parallel mining threads (defaulting to the total number of processor cores).
+
+`geth --mine --miner.threads=4`
+
+You can also start and stop CPU mining at runtime using the console. miner.start takes an optional parameter for the number of miner threads.
+```
+> miner.start(8)
+true
+> miner.stop()
+true
+```
+
+Note that mining for real ether only makes sense if you are in sync with the network (since you mine on top of the consensus block). Therefore the eth blockchain downloader/synchroniser will delay mining until syncing is complete, and after that mining automatically starts unless you cancel your intention with miner.stop().
+
+In order to earn ether you must have your etherbase (or coinbase) address set. This etherbase defaults to your primary account. If you don’t have an etherbase address, then geth --mine will not start up.
+
+You can set your etherbase on the command line:
+
+`geth --miner.etherbase '0xC95767AC46EA2A9162F0734651d6cF17e5BfcF10' --mine 2>> geth.log`
+
+You can reset your etherbase on the console too:
+
+`> miner.setEtherbase(eth.accounts[2])`
+
+Note that your etherbase does not need to be an address of a local account, just an existing one.
+
+There is an option to add extra data (32 bytes only) to your mined blocks. By convention this is interpreted as a unicode string, so you can set your short vanity tag.
+
+`> miner.setExtra("ΞTHΞЯSPHΞЯΞ")`
+
+You can check your hashrate with miner.hashrate, the result is in H/s (Hash operations per second).
+
+```
+> eth.hashrate
+712000
+```
+
+After you successfully mined some blocks, you can check the ether balance of your etherbase account. Now assuming your etherbase is a local account:
+
+```
+> eth.getBalance(eth.coinbase).toNumber();
+'34698870000000'
+```
+
+You can check which blocks are mined by a particular miner (address) with the following code snippet on the console:
+```
+> function minedBlocks(lastn, addr) {
+    addrs = [];
+    if (!addr) {
+        addr = eth.coinbase
+    }
+    limit = eth.blockNumber - lastn
+    for (i = eth.blockNumber; i >= limit; i--) {
+        if (eth.getBlock(i).miner == addr) {
+            addrs.push(i)
+        }
+    }
+    return addrs
+}
+// scans the last 1000 blocks and returns the blocknumbers of blocks mined by your coinbase
+// (more precisely blocks the mining reward for which is sent to your coinbase).
+> minedBlocks(1000, eth.coinbase)
+[352708, 352655, 352559]
+```
+Note that it will happen often that you find a block yet it never makes it to the canonical chain. This means when you locally include your mined block, the current state will show the mining reward credited to your account, however, after a while, the better chain is discovered and we switch to a chain in which your block is not included and therefore no mining reward is credited. Therefore it is quite possible that as a miner monitoring their coinbase balance will find that it may fluctuate quite a bit.
+
+The logs show locally mined blocks confirmed after 5 blocks. At the moment you may find it easier and faster to generate the list of your mined blocks from these logs.
+
 ## License
 
 The core-geth library (i.e. all code outside of the `cmd` directory) is licensed under the
