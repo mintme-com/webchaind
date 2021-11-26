@@ -84,7 +84,29 @@ testing procedures.
 
 ## Mining
 
-IN PROGRESS
+Mining is the process through which new blocks are created. Geth actually creates new blocks all the time, but these blocks need to be secured through proof-of-work so they will be accepted by other nodes. Mining is all about creating these proof-of-work values.
+
+The proof-of-work computation can be performed in multiple ways. Geth includes a CPU miner, which does mining within the geth process. We discourage using the CPU miner with the Ethereum mainnet. If you want to mine real ether, use GPU mining. Your best option for doing that is the ethminer software.
+
+Always ensure your blockchain is fully synchronised with the chain before starting to mine, otherwise you will not be mining on the correct chain and your block rewards will not be valueable.
+
+## GPU mining
+
+The ethash algorithm is memory hard and in order to fit the DAG into memory, it needs 1-2GB of RAM on each GPU. If you get ``Error GPU mining. GPU memory fragmentation?`` you don’t have enough memory.
+
+## Installing ethminer
+
+To get ethminer, you need to install the ethminer binary package or build it from source. See https://github.com/ethereum-mining/ethminer/#build for the official ethminer build/install instructions. At the time of writing, ethminer only provides a binary for Microsoft Windows.
+
+## Using ethminer with geth
+
+First create an account to hold your block rewards.
+
+`geth account new`
+
+Follow the prompts and enter a good password. **DO NOT FORGET YOUR PASSWORD**. Also take note of the public Ethereum address which is printed at the end of the account creation process. In the following examples, we will use 0xC95767AC46EA2A9162F0734651d6cF17e5BfcF10 as the example address.
+
+Now start geth and wait for it to sync the blockchain. This will take quite a while.
 
 ## License
 
