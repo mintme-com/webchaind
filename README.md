@@ -108,6 +108,33 @@ Follow the prompts and enter a good password. **DO NOT FORGET YOUR PASSWORD**. A
 
 Now start geth and wait for it to sync the blockchain. This will take quite a while.
 
+`geth --http --miner.etherbase 0xC95767AC46EA2A9162F0734651d6cF17e5BfcF10`
+
+To monitor the syncing, in another terminal you can attach the geth JavaScript console to the running node like so:
+
+`geth attach https://127.0.0.1:8545`
+
+and then at the > prompt type
+
+`eth.syncing`
+
+You’ll see something like the example output below – it’s a two stage process as described in much more detail in our FAQ. In the first stage, the difference between the “currentBlock” and the “highestBlock” will decrease until they are almost equal. It will then look stuck and appear as never becoming equal. But you should see “pulledStates” rising to equal “knownStates.” When both are equal, you are synced.
+
+Example output of first stage of block downloading:
+
+```{
+  currentBlock: 10707814,
+  highestBlock: 13252182,
+  knownStates: 0,
+  pulledStates: 0,
+  startingBlock: 3809258 }```
+
+You will import up to the highestBlock and knownStates. Block importing will stop ~64 blocks behind head and finish importing states.
+
+Once all states are downloaded, geth will switch into a full node and sync the remaining ~64 blocks fully, as well as new ones. In this context, eth.syncing returns false once synced.
+
+Now we’re ready to start mining. In a new terminal session, run ethminer and connect it to geth:
+
 ## License
 
 The core-geth library (i.e. all code outside of the `cmd` directory) is licensed under the
