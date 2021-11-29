@@ -90,66 +90,7 @@ The proof-of-work computation can be performed in multiple ways. Geth includes a
 
 Always ensure your blockchain is fully synchronised with the chain before starting to mine, otherwise you will not be mining on the correct chain and your block rewards will not be valueable.
 
-## GPU mining
-
-The ethash algorithm is memory hard and in order to fit the DAG into memory, it needs 1-2GB of RAM on each GPU. If you get ``Error GPU mining. GPU memory fragmentation?`` you don’t have enough memory.
-
-## Installing ethminer
-
-To get ethminer, you need to install the ethminer binary package or build it from source. See https://github.com/ethereum-mining/ethminer/#build for the official ethminer build/install instructions. At the time of writing, ethminer only provides a binary for Microsoft Windows.
-
-## Using ethminer with geth
-
-First create an account to hold your block rewards.
-
-`geth account new`
-
-Follow the prompts and enter a good password. **DO NOT FORGET YOUR PASSWORD**. Also take note of the public Ethereum address which is printed at the end of the account creation process. In the following examples, we will use 0xC95767AC46EA2A9162F0734651d6cF17e5BfcF10 as the example address.
-
-Now start geth and wait for it to sync the blockchain. This will take quite a while.
-
-`geth --http --miner.etherbase 0xC95767AC46EA2A9162F0734651d6cF17e5BfcF10`
-
-To monitor the syncing, in another terminal you can attach the geth JavaScript console to the running node like so:
-
-`geth attach https://127.0.0.1:8545`
-
-and then at the > prompt type
-
-`eth.syncing`
-
-You’ll see something like the example output below – it’s a two stage process as described in much more detail in our FAQ. In the first stage, the difference between the “currentBlock” and the “highestBlock” will decrease until they are almost equal. It will then look stuck and appear as never becoming equal. But you should see “pulledStates” rising to equal “knownStates.” When both are equal, you are synced.
-
-Example output of first stage of block downloading:
-
-```
-{
-  currentBlock: 10707814,
-  highestBlock: 13252182,
-  knownStates: 0,
-  pulledStates: 0,
-  startingBlock: 3809258 }
-```
-
-You will import up to the highestBlock and knownStates. Block importing will stop ~64 blocks behind head and finish importing states.
-
-Once all states are downloaded, geth will switch into a full node and sync the remaining ~64 blocks fully, as well as new ones. In this context, eth.syncing returns false once synced.
-
-Now we’re ready to start mining. In a new terminal session, run ethminer and connect it to geth:
-
-OpenCL
-
-`ethminer -G -P http://127.0.0.1:8545`
-
-CUDA
-
-`ethminer -U -P http://127.0.0.1:8545`
-
-ethminer communicates with geth on port 8545 (the default RPC port in geth). You can change this by giving the --http.port option to geth. Ethminer will find geth on any port. You also need to set the port on ethminer with -P http://127.0.0.1:3301. Setting up custom ports is necessary if you want several instances mining on the same computer. If you are testing on a private cluster, we recommend you use CPU mining instead.
-
-If the default for ethminer does not work try to specify the OpenCL device with: --opencl-device X where X is 0, 1, 2, etc. 
-
-## CPU Mining with Geth
+## Solo mining
 
 When you start up your ethereum node with geth it is not mining by default. To start it in mining mode, you use the --mine command-line flag. The --miner.threads parameter can be used to set the number parallel mining threads (defaulting to the total number of processor cores).
 
@@ -218,6 +159,75 @@ You can check which blocks are mined by a particular miner (address) with the fo
 Note that it will happen often that you find a block yet it never makes it to the canonical chain. This means when you locally include your mined block, the current state will show the mining reward credited to your account, however, after a while, the better chain is discovered and we switch to a chain in which your block is not included and therefore no mining reward is credited. Therefore it is quite possible that as a miner monitoring their coinbase balance will find that it may fluctuate quite a bit.
 
 The logs show locally mined blocks confirmed after 5 blocks. At the moment you may find it easier and faster to generate the list of your mined blocks from these logs.
+
+## Pool mining
+
+We download miner binary for your system from here https://github.com/webchain-network/webchain-miner/releases
+
+Then unpack it and in dir of unpacked miner we see file config.json , which is our miner configuration file, which contains main mining setting, like wallet number, threads , max-cpu-usage , etc.
+
+The main thing we need to do is to set your wallet number where we will get reward to config.json
+
+So we put our wallet number created by webchaind to "user" field of config.json, it shoud be set like this:
+
+"user": "0x918e173c8426593bd37d5bc7d03f17dcc154cd5b",
+
+Now we can save config.json , start mining and get rewards
+
+We ready to start miner, it done by command: ./webchain-miner (Linux) or webchain-miner.exe (Windows)
+
+Now we will see screen like that:
+
+`./webchain-miner`
+
+    VERSIONS: webchain-miner/2.6.2 libuv/1.20.3-dev gcc/6.3.0
+    CPU: Intel(R) Xeon(R) CPU D-1521 @ 2.40GHz (1) x64 AES-NI
+    CPU L2/L3: 1.0 MB/6.0 MB
+    THREADS: 5, cryptonight-webchain, av=1, donate=5%
+    POOL #1: pool2.webchain.network:2222
+    COMMANDS: hashrate, pause, resume [2018-05-10 16:54:36] use pool pool2.webchain.network:2222 212.32.255.73 [2018-05-10 16:54:36] new job from pool2.webchain.network:2222 diff 5000 algo cn-web/1 [2018-05-10 16:54:36] READY (CPU) threads 5(5) huge pages 0/5 0% memory 10.0 MB [2018-05-10 23:26:02] speed 2.5s/60s/15m 14.6 14.8 13.6 H/s max: 20.3 H/s [2018-05-10 23:26:23] accepted (1/0) diff 5000 (170 ms)
+
+Short description:
+
+Pool is service which devide block finding task from webchain network between all miners in pool and also divide reward based on miners hashrate
+
+Job is mining block finding task from network H/s is how much hashes in second your CPU can generate to find correct solution of block task accepted means your CPU found correct solution of task , send it to pool and it can be one of multiply correct block solution for what network will reward pool by 50 WEB, which will divide between miners based on their hasrate
+
+So all you need is to run miner and wait some time (maybe 5 min, maybe 1 hour) when your miner find accepted shares and pool will give some part of reward coins to your account.
+
+Step 4. Pool and payments
+
+Currently we have official pool - pool.webchain.network:3333
+
+So we start mining and then open https://pool.webchain.network/ in search string below "Your Stats & Payment History" we put our wallet number: `0x918e173c8426593bd37d5bc7d03f17dcc154cd5b`
+
+and after miner send his first accepted share we will see realtime stats on top of page
+
+First of all you will get coins in Immature Balance, it means you got coins from network, but they need confirmation. Pending Balance is your money already which wait pool payment schedule to pay to your wallet Total Paid: is how much money already sent from pool to your wallet Last Share Submitted means how much time ago your miner(s) submit accepted share to pool Workers Online means how much computers mine with the same wallet Hashrate (30m) and (3h) shows your common average from all your computers where you mining with this wallet number Blocks Found means how much block was found by your share solution Total payments means how much payment schedules was completed from pool with payment to your wallet Your round share is how much job of block solution your miner(s) do in comparison with all miners in pool
+
+So when you will see some amount in Total paid, you can go back to your webchaind console and write command again:
+
+`web3.fromWei(webchain.getBalance(webchain.coinbase), "ether")`
+
+`5`
+
+You will see other amount then 5 but it will be different from 0
+
+If not, there can be some reason. First - your webchaind not synchronizing with network. So you need some time to wait (maybe about 1 hour) Also you can try to run
+
+`webchaind --fast console`
+
+or you can download blockchain file here: https://webchain.network/blockchain.raw and import it by executing:
+
+`$ webchaind --fakepow import <path where you downloaded the blockchain>/blockchain.raw`
+
+and retry to get balance, or wait some time and try again
+
+Second - your local time is not correct Check please your OS for how to resync your clock (example `sudo ntpdate -s time.nist.gov`) because even 12 seconds too fast can lead to 0 peers.
+
+Also you can see your real time balance of coins at https://explorer.webchain.network, enter you wallet number at the right top of page and you will how much coins you have for now
+
+How to transer funds you can see at https://github.com/mintme-com/webchaind/wiki/Transfers
 
 ## License
 
