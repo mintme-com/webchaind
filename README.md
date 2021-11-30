@@ -168,7 +168,7 @@ Then unpack it and in dir of unpacked miner we see file config.json , which is o
 
 The main thing we need to do is to set your wallet number where we will get reward to config.json
 
-So we put our wallet number created by webchaind to "user" field of config.json, it shoud be set like this:
+So we put our wallet number created by mintme to "user" field of config.json, it shoud be set like this:
 
 "user": "0x918e173c8426593bd37d5bc7d03f17dcc154cd5b",
 
@@ -205,23 +205,15 @@ and after miner send his first accepted share we will see realtime stats on top 
 
 First of all you will get coins in Immature Balance, it means you got coins from network, but they need confirmation. Pending Balance is your money already which wait pool payment schedule to pay to your wallet Total Paid: is how much money already sent from pool to your wallet Last Share Submitted means how much time ago your miner(s) submit accepted share to pool Workers Online means how much computers mine with the same wallet Hashrate (30m) and (3h) shows your common average from all your computers where you mining with this wallet number Blocks Found means how much block was found by your share solution Total payments means how much payment schedules was completed from pool with payment to your wallet Your round share is how much job of block solution your miner(s) do in comparison with all miners in pool
 
-So when you will see some amount in Total paid, you can go back to your webchaind console and write command again:
+So when you will see some amount in Total paid, you can go back to your mintme console and write command again:
 
-`web3.fromWei(webchain.getBalance(webchain.coinbase), "ether")`
+`web3.fromWei(eth.getBalance(eth.coinbase), "ether")`
 
 `5`
 
 You will see other amount then 5 but it will be different from 0
 
-If not, there can be some reason. First - your webchaind not synchronizing with network. So you need some time to wait (maybe about 1 hour) Also you can try to run
-
-`webchaind --fast console`
-
-or you can download blockchain file here: https://webchain.network/blockchain.raw and import it by executing:
-
-`$ webchaind --fakepow import <path where you downloaded the blockchain>/blockchain.raw`
-
-and retry to get balance, or wait some time and try again
+If not, there can be some reason. First - your mintme not synchronizing with network. So you need some time to wait (maybe about 1 hour) 
 
 Second - your local time is not correct Check please your OS for how to resync your clock (example `sudo ntpdate -s time.nist.gov`) because even 12 seconds too fast can lead to 0 peers.
 
