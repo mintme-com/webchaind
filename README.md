@@ -1,5 +1,7 @@
 ## Webchaind
 
+**Webchaind** was replaced with core-geth, visit https://github.com/etclabscore/core-geth to learn more.
+
 Official Go language implementation of the MintMe.com Coin daemon.
 
 ## Install Webchaind
